@@ -1,0 +1,39 @@
+{% extends "base_admin.html" %}
+{% block title %}Tasks — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Master Sanitation Schedule</div>
+    <h1 class="page-title">Tasks</h1>
+    <p class="page-subtitle">Every recurring task defined across all clients and zones.</p>
+  </div>
+  <a href="{{ url_for('tasks_admin.task_new', company_id=company.id) }}" class="btn btn-accent">
+    <i class="bi bi-plus-lg"></i> New task
+  </a>
+</div>
+
+{% if not tasks %}
+  <div class="sp-card">
+    <div class="empty-state">
+      <i class="bi bi-list-check"></i>
+      No tasks defined yet. Create your first one to start building the schedule.
+    </div>
+  </div>
+{% else %}
+  <div class="sp-card">
+    {% for task in tasks %}
+      <div class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ task.name }}</div>
+          <div class="sp-row-meta">
+            {{ task.zone.client.name }} &middot; {{ task.zone.name }}
+            {% if task.default_chemical %} &middot; {{ task.default_chemical.name }}{% endif %}
+            {% if task.sop_document %} &middot; <i class="bi bi-file-earmark-text"></i> {{ task.sop_document.title }}{% endif %}
+          </div>
+        </div>
+        <span class="pill pill-pending text-capitalize">{{ task.frequency }}</span>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

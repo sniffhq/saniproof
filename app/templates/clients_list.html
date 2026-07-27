@@ -1,0 +1,37 @@
+{% extends "base_admin.html" %}
+{% block title %}Clients — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Accounts</div>
+    <h1 class="page-title">Clients</h1>
+    <p class="page-subtitle">Food & beverage facilities this company services.</p>
+  </div>
+</div>
+
+{% if not clients %}
+  <div class="sp-card">
+    <div class="empty-state">
+      <i class="bi bi-building"></i>
+      No clients yet. Add one via Supabase to get started.
+    </div>
+  </div>
+{% else %}
+  <div class="sp-card">
+    {% for client in clients %}
+      <div class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ client.name }}</div>
+          <div class="sp-row-meta">
+            {{ zone_counts.get(client.id, 0) }} zone{{ 's' if zone_counts.get(client.id, 0) != 1 else '' }}
+            {% if client.contact_name %} &middot; {{ client.contact_name }}{% endif %}
+          </div>
+        </div>
+        <a href="{{ url_for('portal.client_portal', client_id=client.id) }}" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-box-arrow-up-right"></i> View portal
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

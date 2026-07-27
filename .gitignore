@@ -3,4 +3,6 @@ __pycache__/
 .env
 app/static/uploads/*
 !app/static/uploads/.gitkeep
+app/static/sops/*
+!app/static/sops/.gitkeep
 .DS_Store

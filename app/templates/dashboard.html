@@ -1,44 +1,53 @@
-{% extends "base.html" %}
+{% extends "base_admin.html" %}
 {% block title %}{{ company.name }} Dashboard{% endblock %}
 {% block content %}
-<h1 class="h3">{{ company.name }}</h1>
-<p class="text-muted">Today's shifts and task status</p>
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Dashboard</div>
+    <h1 class="page-title">Today's schedule</h1>
+    <p class="page-subtitle">{{ shifts|length }} shift{{ 's' if shifts|length != 1 else '' }} scheduled for today</p>
+  </div>
+  <a href="{{ url_for('tasks_admin.task_new', company_id=company.id) }}" class="btn btn-accent">
+    <i class="bi bi-plus-lg"></i> New task
+  </a>
+</div>
 
-<div class="row mb-4">
+<div class="row g-3 mb-4">
   {% for status, count in counts.items() %}
-    <div class="col-3">
-      <div class="card text-center">
-        <div class="card-body">
-          <div class="fs-4 fw-bold">{{ count }}</div>
-          <div class="text-muted text-capitalize">{{ status.replace('_', ' ') }}</div>
-        </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile">
+        <div class="stat-value">{{ count }}</div>
+        <div class="stat-label">{{ status.replace('_', ' ') }}</div>
       </div>
     </div>
   {% endfor %}
 </div>
 
 {% if not shifts %}
-  <p class="text-muted">No shifts scheduled today.</p>
+  <div class="sp-card">
+    <div class="empty-state">
+      <i class="bi bi-calendar-x"></i>
+      No shifts scheduled today.
+    </div>
+  </div>
 {% else %}
   {% for shift in shifts %}
-    <div class="card mb-3">
-      <div class="card-header">
-        {{ shift.client.name }} &mdash; {{ shift.shift_date }}
+    <div class="sp-card">
+      <div class="sp-card-header">
+        <span><i class="bi bi-building me-2 text-muted"></i>{{ shift.client.name }}</span>
+        <span class="sp-row-meta">{{ shift.shift_date }}</span>
       </div>
-      <ul class="list-group list-group-flush">
-        {% for a in assignments if a.shift_id == shift.id %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <a href="{{ url_for('tasks.task_detail', assignment_id=a.id) }}">
-              {{ a.mss_task.name }} ({{ a.mss_task.zone.name }})
-            </a>
-            <span class="badge bg-{{ 'success' if a.status == 'completed' else 'secondary' }}">
-              {{ a.status.replace('_', ' ') }}
-            </span>
-          </li>
-        {% else %}
-          <li class="list-group-item text-muted">No tasks assigned to this shift yet.</li>
-        {% endfor %}
-      </ul>
+      {% for a in assignments if a.shift_id == shift.id %}
+        <a href="{{ url_for('tasks.task_detail', assignment_id=a.id) }}" class="sp-row">
+          <div>
+            <div class="sp-row-title">{{ a.mss_task.name }}</div>
+            <div class="sp-row-meta">{{ a.mss_task.zone.name }}</div>
+          </div>
+          <span class="pill pill-{{ a.status }}">{{ a.status.replace('_', ' ') }}</span>
+        </a>
+      {% else %}
+        <div class="empty-state py-3">No tasks assigned to this shift yet.</div>
+      {% endfor %}
     </div>
   {% endfor %}
 {% endif %}

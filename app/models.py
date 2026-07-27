@@ -111,6 +111,19 @@ class Chemical(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 
+class SopDocument(db.Model):
+    __tablename__ = "sop_documents"
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=gen_uuid)
+    company_id = db.Column(UUID(as_uuid=True), db.ForeignKey("companies.id"), nullable=False)
+    title = db.Column(db.Text, nullable=False)
+    description = db.Column(db.Text)
+    category = db.Column(db.Text)
+    file_url = db.Column(db.Text)
+    version = db.Column(db.Text)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+
+
 class MssTask(db.Model):
     __tablename__ = "mss_tasks"
 
@@ -120,10 +133,12 @@ class MssTask(db.Model):
     description = db.Column(db.Text)
     frequency = db.Column(db.Text, nullable=False)  # daily | weekly | monthly | quarterly | custom
     default_chemical_id = db.Column(UUID(as_uuid=True), db.ForeignKey("chemicals.id"))
+    sop_document_id = db.Column(UUID(as_uuid=True), db.ForeignKey("sop_documents.id"))
     active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
     default_chemical = db.relationship("Chemical")
+    sop_document = db.relationship("SopDocument")
     assignments = db.relationship("TaskAssignment", backref="mss_task", lazy=True)
 
 

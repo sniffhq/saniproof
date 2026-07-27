@@ -15,3 +15,4 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB cap on photo uploads
     UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "app", "static", "uploads")
+    SOP_UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "app", "static", "sops")

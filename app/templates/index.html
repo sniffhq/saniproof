@@ -1,16 +1,28 @@
 {% extends "base.html" %}
 {% block title %}SaniProof{% endblock %}
 {% block content %}
-<h1 class="h3 mb-4">Companies</h1>
+<div class="landing-hero">
+  <span class="brand-mark"><i class="bi bi-shield-check"></i></span>
+  <h1 class="page-title">Select a company</h1>
+  <p class="page-subtitle">Pick the sanitation company workspace you want to open.</p>
+</div>
 
 {% if not companies %}
-  <p class="text-muted">No companies yet. Add one via Supabase or the API to get started.</p>
+  <div class="sp-card">
+    <div class="empty-state">
+      <i class="bi bi-building-add"></i>
+      No companies yet. Add one via Supabase or the API to get started.
+    </div>
+  </div>
 {% else %}
-  <div class="list-group">
+  <div class="sp-card">
     {% for c in companies %}
-      <a href="{{ url_for('dashboard.company_dashboard', company_id=c.id) }}"
-         class="list-group-item list-group-item-action">
-        {{ c.name }}
+      <a href="{{ url_for('dashboard.company_dashboard', company_id=c.id) }}" class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ c.name }}</div>
+          <div class="sp-row-meta">Open dashboard</div>
+        </div>
+        <i class="bi bi-chevron-right text-muted"></i>
       </a>
     {% endfor %}
   </div>

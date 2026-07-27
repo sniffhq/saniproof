@@ -1,39 +1,49 @@
 {% extends "base.html" %}
 {% block title %}{{ client.name }} Portal{% endblock %}
 {% block content %}
-<h1 class="h3">{{ client.name }}</h1>
-<p class="text-muted">Cleaning status by zone</p>
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Client portal</div>
+    <h1 class="page-title">{{ client.name }}</h1>
+    <p class="page-subtitle">Cleaning status by zone, straight from your sanitation team's records.</p>
+  </div>
+</div>
 
 {% if not zone_data %}
-  <p class="text-muted">No zones set up for this facility yet.</p>
+  <div class="sp-card">
+    <div class="empty-state">
+      <i class="bi bi-diagram-3"></i>
+      No zones set up for this facility yet.
+    </div>
+  </div>
 {% endif %}
 
 {% for entry in zone_data %}
-  <div class="card mb-3">
-    <div class="card-header">{{ entry.zone.name }}</div>
-    <table class="table mb-0">
+  <div class="sp-card">
+    <div class="sp-card-header"><i class="bi bi-geo-alt me-1"></i> {{ entry.zone.name }}</div>
+    <table class="table mb-0 align-middle">
       <thead>
         <tr>
-          <th>Task</th>
+          <th class="ps-3">Task</th>
           <th>Frequency</th>
-          <th>Last completed</th>
+          <th class="pe-3">Last completed</th>
         </tr>
       </thead>
       <tbody>
         {% for row in entry.tasks %}
           <tr>
-            <td>{{ row.task.name }}</td>
-            <td class="text-capitalize">{{ row.task.frequency }}</td>
-            <td>
+            <td class="ps-3">{{ row.task.name }}</td>
+            <td><span class="pill pill-pending text-capitalize">{{ row.task.frequency }}</span></td>
+            <td class="pe-3">
               {% if row.latest_completion %}
-                {{ row.latest_completion.completed_at }}
+                {{ row.latest_completion.completed_at.strftime('%b %d, %Y %I:%M %p') if row.latest_completion.completed_at else row.latest_completion.completed_at }}
               {% else %}
                 <span class="text-muted">Not yet completed</span>
               {% endif %}
             </td>
           </tr>
         {% else %}
-          <tr><td colspan="3" class="text-muted">No tasks in this zone.</td></tr>
+          <tr><td colspan="3" class="text-muted ps-3 py-3">No tasks in this zone.</td></tr>
         {% endfor %}
       </tbody>
     </table>

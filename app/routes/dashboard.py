@@ -49,4 +49,6 @@ def company_dashboard(company_id):
         shifts=today_shifts,
         assignments=assignments,
         counts=counts,
+        show_sidebar=True,
+        active_nav="dashboard",
     )

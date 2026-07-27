@@ -1,0 +1,86 @@
+{% extends "base_admin.html" %}
+{% block title %}New task — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Master Sanitation Schedule</div>
+    <h1 class="page-title">New task</h1>
+    <p class="page-subtitle">Add a recurring sanitation task to a zone.</p>
+  </div>
+</div>
+
+{% if not zones %}
+  <div class="sp-card">
+    <div class="empty-state">
+      <i class="bi bi-exclamation-triangle"></i>
+      No zones exist yet for this company's clients. Add a client and zone in Supabase first.
+    </div>
+  </div>
+{% else %}
+  <div class="sp-card">
+    <div class="sp-card-body">
+      <form method="post">
+        <div class="mb-3">
+          <label class="form-label">Task name</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Sanitize conveyor belt" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Zone</label>
+          <select name="zone_id" class="form-select" required>
+            <option value="" disabled selected>Select a zone</option>
+            {% for zone in zones %}
+              <option value="{{ zone.id }}">{{ zone.client.name }} — {{ zone.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Frequency</label>
+            <select name="frequency" class="form-select" required>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Default chemical</label>
+            <select name="default_chemical_id" class="form-select">
+              <option value="">-- none --</option>
+              {% for c in chemicals %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Linked SOP <span class="text-muted fw-normal">(optional)</span></label>
+          <select name="sop_document_id" class="form-select">
+            <option value="">-- none --</option>
+            {% for s in sops %}
+              <option value="{{ s.id }}">{{ s.title }}</option>
+            {% endfor %}
+          </select>
+          <div class="form-text">
+            Don't see the right SOP? <a href="{{ url_for('sops.sop_new', company_id=company.id) }}">Add one first</a>, then come back.
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" rows="3" placeholder="What does this task actually involve?"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-accent">
+          <i class="bi bi-check-lg"></i> Create task
+        </button>
+        <a href="{{ url_for('tasks_admin.task_list', company_id=company.id) }}" class="btn btn-light">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

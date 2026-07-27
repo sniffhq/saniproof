@@ -1,0 +1,49 @@
+{% extends "base_admin.html" %}
+{% block title %}Add SOP — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Document library</div>
+    <h1 class="page-title">Add SOP</h1>
+    <p class="page-subtitle">Upload a standard operating procedure document.</p>
+  </div>
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-body">
+    <form method="post" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input type="text" name="title" class="form-control" placeholder="e.g. Conveyor Belt Teardown &amp; Sanitize" required>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Category <span class="text-muted fw-normal">(optional)</span></label>
+          <input type="text" name="category" class="form-control" placeholder="e.g. Equipment, Allergen, Chemical">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Version <span class="text-muted fw-normal">(optional)</span></label>
+          <input type="text" name="version" class="form-control" placeholder="e.g. 2.1">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" rows="3" placeholder="What's this procedure for?"></textarea>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label">Document file <span class="text-muted fw-normal">(optional)</span></label>
+        <input type="file" name="file" class="form-control">
+        <div class="form-text">PDF, Word doc, or image of the procedure.</div>
+      </div>
+
+      <button type="submit" class="btn btn-accent">
+        <i class="bi bi-check-lg"></i> Save SOP
+      </button>
+      <a href="{{ url_for('sops.sop_list', company_id=company.id) }}" class="btn btn-light">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

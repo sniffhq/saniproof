@@ -1,22 +1,37 @@
 {% extends "base.html" %}
 {% block title %}{{ assignment.mss_task.name }}{% endblock %}
 {% block content %}
-<h1 class="h3">{{ assignment.mss_task.name }}</h1>
-<p class="text-muted">
-  Zone: {{ assignment.mss_task.zone.name }} &middot;
-  Client: {{ assignment.shift.client.name }} &middot;
-  Status: <span class="badge bg-secondary">{{ assignment.status.replace('_', ' ') }}</span>
-</p>
+<div class="page-header">
+  <div>
+    <div class="eyebrow">{{ assignment.shift.client.name }} &middot; {{ assignment.mss_task.zone.name }}</div>
+    <h1 class="page-title">{{ assignment.mss_task.name }}</h1>
+  </div>
+  <span class="pill pill-{{ assignment.status }}">{{ assignment.status.replace('_', ' ') }}</span>
+</div>
 
 {% if assignment.mss_task.description %}
-  <p>{{ assignment.mss_task.description }}</p>
+  <p class="page-subtitle mb-3">{{ assignment.mss_task.description }}</p>
+{% endif %}
+
+{% if assignment.mss_task.sop_document %}
+  <div class="sp-card">
+    <div class="sp-row">
+      <div>
+        <div class="sp-row-title"><i class="bi bi-file-earmark-text me-1"></i> {{ assignment.mss_task.sop_document.title }}</div>
+        <div class="sp-row-meta">Linked SOP for this task</div>
+      </div>
+      {% if assignment.mss_task.sop_document.file_url %}
+        <a href="{{ assignment.mss_task.sop_document.file_url }}" target="_blank" class="btn btn-sm btn-outline-secondary">View</a>
+      {% endif %}
+    </div>
+  </div>
 {% endif %}
 
 <div class="row">
   <div class="col-md-6">
-    <div class="card mb-4">
-      <div class="card-header">Mark complete</div>
-      <div class="card-body">
+    <div class="sp-card">
+      <div class="sp-card-header"><i class="bi bi-camera me-1"></i> Mark complete</div>
+      <div class="sp-card-body">
         <form method="post" action="{{ url_for('tasks.complete_task', assignment_id=assignment.id) }}" enctype="multipart/form-data">
           <div class="mb-3">
             <label class="form-label">Photo proof</label>
@@ -39,16 +54,18 @@
             <label class="form-label">Notes</label>
             <textarea name="notes" class="form-control" rows="2"></textarea>
           </div>
-          <button type="submit" class="btn btn-success">Mark task complete</button>
+          <button type="submit" class="btn btn-accent w-100">
+            <i class="bi bi-check-lg"></i> Mark task complete
+          </button>
         </form>
       </div>
     </div>
   </div>
 
   <div class="col-md-6">
-    <div class="card mb-4">
-      <div class="card-header">Report an issue</div>
-      <div class="card-body">
+    <div class="sp-card">
+      <div class="sp-card-header"><i class="bi bi-exclamation-triangle me-1"></i> Report an issue</div>
+      <div class="sp-card-body">
         <form method="post" action="{{ url_for('tasks.report_issue', assignment_id=assignment.id) }}">
           <div class="mb-3">
             <label class="form-label">What's wrong?</label>
@@ -63,24 +80,29 @@
               <option value="critical">Critical</option>
             </select>
           </div>
-          <button type="submit" class="btn btn-outline-danger">Report issue</button>
+          <button type="submit" class="btn btn-outline-danger w-100">Report issue</button>
         </form>
       </div>
     </div>
   </div>
 </div>
 
-<h2 class="h5">Completion history</h2>
+<div class="eyebrow mt-2">History</div>
 {% if not assignment.completions %}
-  <p class="text-muted">No completions logged yet.</p>
+  <div class="sp-card">
+    <div class="empty-state py-3">No completions logged yet.</div>
+  </div>
 {% else %}
-  <ul class="list-group">
+  <div class="sp-card">
     {% for c in assignment.completions %}
-      <li class="list-group-item">
-        {{ c.completed_at }} &mdash; {{ c.notes or "No notes" }}
-        {% if c.photo_url %}<br><img src="{{ c.photo_url }}" style="max-width:150px" class="mt-2">{% endif %}
-      </li>
+      <div class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ c.completed_at.strftime('%b %d, %Y %I:%M %p') if c.completed_at else '' }}</div>
+          <div class="sp-row-meta">{{ c.notes or "No notes" }}</div>
+          {% if c.photo_url %}<img src="{{ c.photo_url }}" style="max-width:150px; border-radius:8px;" class="mt-2">{% endif %}
+        </div>
+      </div>
     {% endfor %}
-  </ul>
+  </div>
 {% endif %}
 {% endblock %}

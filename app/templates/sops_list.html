@@ -1,0 +1,45 @@
+{% extends "base_admin.html" %}
+{% block title %}SOPs — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Document library</div>
+    <h1 class="page-title">SOPs</h1>
+    <p class="page-subtitle">Standard operating procedures backing your sanitation tasks.</p>
+  </div>
+  <a href="{{ url_for('sops.sop_new', company_id=company.id) }}" class="btn btn-accent">
+    <i class="bi bi-plus-lg"></i> Add SOP
+  </a>
+</div>
+
+{% if not sops %}
+  <div class="sp-card">
+    <div class="empty-state">
+      <i class="bi bi-file-earmark-text"></i>
+      No SOPs uploaded yet.
+    </div>
+  </div>
+{% else %}
+  <div class="sp-card">
+    {% for sop in sops %}
+      <div class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ sop.title }}</div>
+          <div class="sp-row-meta">
+            {% if sop.category %}{{ sop.category }} &middot; {% endif %}
+            {% if sop.version %}v{{ sop.version }} &middot; {% endif %}
+            {{ sop.description or "No description" }}
+          </div>
+        </div>
+        {% if sop.file_url %}
+          <a href="{{ sop.file_url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-download"></i> View file
+          </a>
+        {% else %}
+          <span class="pill pill-pending">No file attached</span>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}
