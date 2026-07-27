@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ client.name }} Portal{% endblock %}
+{% block content %}
+<h1 class="h3">{{ client.name }}</h1>
+<p class="text-muted">Cleaning status by zone</p>
+
+{% if not zone_data %}
+  <p class="text-muted">No zones set up for this facility yet.</p>
+{% endif %}
+
+{% for entry in zone_data %}
+  <div class="card mb-3">
+    <div class="card-header">{{ entry.zone.name }}</div>
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Frequency</th>
+          <th>Last completed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in entry.tasks %}
+          <tr>
+            <td>{{ row.task.name }}</td>
+            <td class="text-capitalize">{{ row.task.frequency }}</td>
+            <td>
+              {% if row.latest_completion %}
+                {{ row.latest_completion.completed_at }}
+              {% else %}
+                <span class="text-muted">Not yet completed</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="3" class="text-muted">No tasks in this zone.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endfor %}
+{% endblock %}

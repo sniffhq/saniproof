@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}SaniProof{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Companies</h1>
+
+{% if not companies %}
+  <p class="text-muted">No companies yet. Add one via Supabase or the API to get started.</p>
+{% else %}
+  <div class="list-group">
+    {% for c in companies %}
+      <a href="{{ url_for('dashboard.company_dashboard', company_id=c.id) }}"
+         class="list-group-item list-group-item-action">
+        {{ c.name }}
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

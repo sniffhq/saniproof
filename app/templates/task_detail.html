@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ assignment.mss_task.name }}{% endblock %}
+{% block content %}
+<h1 class="h3">{{ assignment.mss_task.name }}</h1>
+<p class="text-muted">
+  Zone: {{ assignment.mss_task.zone.name }} &middot;
+  Client: {{ assignment.shift.client.name }} &middot;
+  Status: <span class="badge bg-secondary">{{ assignment.status.replace('_', ' ') }}</span>
+</p>
+
+{% if assignment.mss_task.description %}
+  <p>{{ assignment.mss_task.description }}</p>
+{% endif %}
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card mb-4">
+      <div class="card-header">Mark complete</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('tasks.complete_task', assignment_id=assignment.id) }}" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label class="form-label">Photo proof</label>
+            <input type="file" name="photo" accept="image/*" capture="environment" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Chemical used</label>
+            <select name="chemical_id" class="form-select">
+              <option value="">-- none / not applicable --</option>
+              {% for c in chemicals %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Dilution used</label>
+            <input type="text" name="dilution_used" class="form-control" placeholder="e.g. 1:64">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="2"></textarea>
+          </div>
+          <button type="submit" class="btn btn-success">Mark task complete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card mb-4">
+      <div class="card-header">Report an issue</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('tasks.report_issue', assignment_id=assignment.id) }}">
+          <div class="mb-3">
+            <label class="form-label">What's wrong?</label>
+            <textarea name="description" class="form-control" rows="2" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Severity</label>
+            <select name="severity" class="form-select">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-outline-danger">Report issue</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 class="h5">Completion history</h2>
+{% if not assignment.completions %}
+  <p class="text-muted">No completions logged yet.</p>
+{% else %}
+  <ul class="list-group">
+    {% for c in assignment.completions %}
+      <li class="list-group-item">
+        {{ c.completed_at }} &mdash; {{ c.notes or "No notes" }}
+        {% if c.photo_url %}<br><img src="{{ c.photo_url }}" style="max-width:150px" class="mt-2">{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+{% endblock %}
