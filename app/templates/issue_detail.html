@@ -1,5 +1,10 @@
 {% extends "base_admin.html" %}
 {% block title %}Issue — {{ company.name }}{% endblock %}
+{% block breadcrumb_current %}
+  <a href="{{ url_for('issues.issue_list', company_id=company.id) }}">Issues</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-current">{{ issue.task_assignment.mss_task.name }}</span>
+{% endblock %}
 {% block content %}
 <div class="page-header">
   <div>

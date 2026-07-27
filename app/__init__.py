@@ -48,4 +48,23 @@ def create_app():
     app.register_blueprint(chemicals_bp)
     app.register_blueprint(reports_bp)
 
+    @app.context_processor
+    def inject_nav_sections():
+        # (breadcrumb label, list-view endpoint) for each sidebar section --
+        # used by base_admin.html to build the "Dashboard / Section / ..."
+        # breadcrumb trail without every route having to pass it explicitly.
+        return {
+            "nav_sections": {
+                "schedule": ("Schedule", "schedule.schedule_list"),
+                "tasks": ("Tasks", "tasks_admin.task_list"),
+                "issues": ("Issues", "issues.issue_list"),
+                "chemicals": ("Chemicals", "chemicals.chemical_list"),
+                "sops": ("SOPs", "sops.sop_list"),
+                "clients": ("Clients", "clients.client_list"),
+                "users": ("Users", "users_admin.user_list"),
+                "certifications": ("Certifications", "certifications.cert_list"),
+                "reports": ("Reports", "reports.report_list"),
+            }
+        }
+
     return app

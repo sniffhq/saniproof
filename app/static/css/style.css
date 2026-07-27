@@ -212,6 +212,31 @@ a { text-decoration: none; }
 
 /* ---------- Page furniture ---------- */
 
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--sp-muted);
+  margin-bottom: 1rem;
+}
+.breadcrumbs a {
+  color: var(--sp-muted);
+  text-decoration: none;
+}
+.breadcrumbs a:hover {
+  color: var(--sp-accent-dark);
+  text-decoration: underline;
+}
+.breadcrumb-sep {
+  color: #cbd5e1;
+}
+.breadcrumb-current {
+  color: var(--sp-ink, #0f172a);
+  font-weight: 500;
+}
+
 .page-header {
   display: flex;
   align-items: flex-start;

@@ -1,5 +1,10 @@
 {% extends "base_admin.html" %}
 {% block title %}{{ 'Edit chemical' if chemical else 'New chemical' }} — {{ company.name }}{% endblock %}
+{% block breadcrumb_current %}
+  <a href="{{ url_for('chemicals.chemical_list', company_id=company.id) }}">Chemicals</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-current">{{ 'Edit ' + chemical.name if chemical else 'New chemical' }}</span>
+{% endblock %}
 {% block content %}
 <div class="page-header">
   <div>

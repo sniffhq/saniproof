@@ -76,6 +76,19 @@
 
     <main class="main-content">
       <div class="main-inner">
+        <nav class="breadcrumbs" aria-label="breadcrumb">
+          {% if active_nav == 'dashboard' %}
+            <span class="breadcrumb-current">Dashboard</span>
+          {% else %}
+            <a href="{{ url_for('dashboard.company_dashboard', company_id=company.id) }}">Dashboard</a>
+            {% if active_nav and nav_sections.get(active_nav) %}
+              <span class="breadcrumb-sep">/</span>
+              {% block breadcrumb_current %}
+                <span class="breadcrumb-current">{{ nav_sections[active_nav][0] }}</span>
+              {% endblock %}
+            {% endif %}
+          {% endif %}
+        </nav>
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, m in messages %}

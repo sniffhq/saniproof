@@ -1,5 +1,10 @@
 {% extends "base_admin.html" %}
 {% block title %}{{ 'Edit client' if client else 'New client' }} — {{ company.name }}{% endblock %}
+{% block breadcrumb_current %}
+  <a href="{{ url_for('clients.client_list', company_id=company.id) }}">Clients</a>
+  <span class="breadcrumb-sep">/</span>
+  <span class="breadcrumb-current">{{ 'Edit ' + client.name if client else 'New client' }}</span>
+{% endblock %}
 {% block content %}
 <div class="page-header">
   <div>
