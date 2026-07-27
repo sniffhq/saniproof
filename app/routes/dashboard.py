@@ -1,16 +1,16 @@
 """
 Internal dashboard for sanitation company staff (admin/crew).
 
-NOTE: there is no authentication wired up yet -- this is a scaffold.
-Right now anyone hitting these routes can pick any company/shift. Before
-real customer data goes anywhere near this, add login (e.g. Flask-Login)
-and enable Supabase Row Level Security as discussed.
+Protected by staff_required (see app/auth.py): a logged-in Staff account
+can only view their own company's dashboard, not any company_id someone
+types into the URL.
 """
 from datetime import date
 
-from flask import Blueprint, render_template, abort
+from flask import Blueprint, redirect, url_for, render_template
+from flask_login import current_user
 
-from app.extensions import db
+from app.auth import staff_required
 from app.models import Company, Shift, TaskAssignment
 
 dashboard_bp = Blueprint("dashboard", __name__)
@@ -18,11 +18,17 @@ dashboard_bp = Blueprint("dashboard", __name__)
 
 @dashboard_bp.route("/")
 def index():
-    companies = Company.query.order_by(Company.name).all()
-    return render_template("index.html", companies=companies)
+    if current_user.is_authenticated:
+        from app.models import Staff
+
+        if isinstance(current_user, Staff):
+            return redirect(url_for("dashboard.company_dashboard", company_id=current_user.company_id))
+        return redirect(url_for("portal.client_select"))
+    return redirect(url_for("auth.login"))
 
 
 @dashboard_bp.route("/company/<uuid:company_id>")
+@staff_required
 def company_dashboard(company_id):
     company = Company.query.get_or_404(company_id)
 

@@ -8,6 +8,7 @@ an issue). This file is about defining/maintaining the schedule itself.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 
+from app.auth import staff_required
 from app.extensions import db
 from app.models import Company, Client, Zone, Chemical, MssTask, SopDocument
 
@@ -15,6 +16,7 @@ tasks_admin_bp = Blueprint("tasks_admin", __name__)
 
 
 @tasks_admin_bp.route("/company/<uuid:company_id>/tasks")
+@staff_required
 def task_list(company_id):
     company = Company.query.get_or_404(company_id)
 
@@ -30,6 +32,7 @@ def task_list(company_id):
 
 
 @tasks_admin_bp.route("/company/<uuid:company_id>/tasks/new", methods=["GET", "POST"])
+@staff_required
 def task_new(company_id):
     company = Company.query.get_or_404(company_id)
 

@@ -15,6 +15,7 @@ import uuid
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, flash
 from werkzeug.utils import secure_filename
 
+from app.auth import staff_required
 from app.extensions import db
 from app.models import Company, SopDocument
 
@@ -22,6 +23,7 @@ sops_bp = Blueprint("sops", __name__)
 
 
 @sops_bp.route("/company/<uuid:company_id>/sops")
+@staff_required
 def sop_list(company_id):
     company = Company.query.get_or_404(company_id)
     sops = (
@@ -35,6 +37,7 @@ def sop_list(company_id):
 
 
 @sops_bp.route("/company/<uuid:company_id>/sops/new", methods=["GET", "POST"])
+@staff_required
 def sop_new(company_id):
     company = Company.query.get_or_404(company_id)
 

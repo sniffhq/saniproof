@@ -7,6 +7,11 @@
     <h1 class="page-title">{{ client.name }}</h1>
     <p class="page-subtitle">Cleaning status by zone, straight from your sanitation team's records.</p>
   </div>
+  {% if show_switcher %}
+    <a href="{{ url_for('portal.client_select') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left-right"></i> Switch facility
+    </a>
+  {% endif %}
 </div>
 
 {% if not zone_data %}

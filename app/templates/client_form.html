@@ -1,0 +1,45 @@
+{% extends "base_admin.html" %}
+{% block title %}New client — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Accounts</div>
+    <h1 class="page-title">New client</h1>
+    <p class="page-subtitle">Add a food & beverage facility. You'll add zones on the next screen.</p>
+  </div>
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-body">
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label">Facility name</label>
+        <input type="text" name="name" class="form-control" placeholder="e.g. Acme Food Processing Plant" required autofocus>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Address</label>
+        <input type="text" name="address" class="form-control" placeholder="Street, city, state">
+      </div>
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Contact name</label>
+          <input type="text" name="contact_name" class="form-control">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Contact email</label>
+          <input type="email" name="contact_email" class="form-control">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Contact phone</label>
+          <input type="text" name="contact_phone" class="form-control">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-accent mt-2">
+        <i class="bi bi-check-lg"></i> Create client
+      </button>
+      <a href="{{ url_for('clients.client_list', company_id=company.id) }}" class="btn btn-light mt-2">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

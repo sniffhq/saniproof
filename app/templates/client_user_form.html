@@ -1,0 +1,66 @@
+{% extends "base_admin.html" %}
+{% block title %}New portal account — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Accounts</div>
+    <h1 class="page-title">New client portal account</h1>
+    <p class="page-subtitle">Scoped to whichever clients you assign below.</p>
+  </div>
+</div>
+
+{% if not clients %}
+  <div class="sp-card">
+    <div class="empty-state">
+      <i class="bi bi-exclamation-triangle"></i>
+      No clients exist yet. <a href="{{ url_for('clients.client_new', company_id=company.id) }}">Add a client first</a>.
+    </div>
+  </div>
+{% else %}
+  <div class="sp-card">
+    <div class="sp-card-body">
+      <form method="post">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" class="form-control" required autofocus>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Role</label>
+            <select name="role" class="form-select" required>
+              <option value="viewer">Viewer</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" required minlength="6">
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Assigned clients</label>
+          <div class="sp-card">
+            {% for client in clients %}
+              <label class="sp-row" style="cursor:pointer;">
+                <span class="sp-row-title" style="font-weight:500;">{{ client.name }}</span>
+                <input type="checkbox" name="client_ids" value="{{ client.id }}" class="form-check-input">
+              </label>
+            {% endfor %}
+          </div>
+          <div class="form-text">This account will only see the facilities checked above.</div>
+        </div>
+
+        <button type="submit" class="btn btn-accent">
+          <i class="bi bi-check-lg"></i> Create account
+        </button>
+        <a href="{{ url_for('users_admin.user_list', company_id=company.id) }}" class="btn btn-light">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

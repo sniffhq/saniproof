@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Select facility{% endblock %}
+{% block content %}
+<div class="landing-hero">
+  <span class="brand-mark"><i class="bi bi-building"></i></span>
+  <h1 class="page-title">Select a facility</h1>
+  <p class="page-subtitle">You have access to more than one facility's portal.</p>
+</div>
+
+<div class="sp-card">
+  {% for client in clients %}
+    <a href="{{ url_for('portal.client_portal', client_id=client.id) }}" class="sp-row">
+      <div class="sp-row-title">{{ client.name }}</div>
+      <i class="bi bi-chevron-right text-muted"></i>
+    </a>
+  {% endfor %}
+</div>
+{% endblock %}

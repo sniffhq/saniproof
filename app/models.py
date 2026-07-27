@@ -5,14 +5,27 @@ rename columns/tables here without also migrating the database.
 """
 import uuid
 
+from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.extensions import db
 
 
 def gen_uuid():
     return uuid.uuid4()
+
+
+class PasswordMixin:
+    """Shared password hashing helpers for the two login-capable models
+    (Staff and ClientUser). Neither model stores plaintext passwords."""
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return bool(self.password_hash) and check_password_hash(self.password_hash, password)
 
 
 class Company(db.Model):
@@ -28,7 +41,7 @@ class Company(db.Model):
     certifications = db.relationship("Certification", backref="company", lazy=True)
 
 
-class Staff(db.Model):
+class Staff(db.Model, UserMixin, PasswordMixin):
     __tablename__ = "staff"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=gen_uuid)
@@ -37,7 +50,13 @@ class Staff(db.Model):
     email = db.Column(db.Text, nullable=False, unique=True)
     role = db.Column(db.Text, nullable=False)  # 'admin' | 'crew'
     phone = db.Column(db.Text)
+    password_hash = db.Column(db.Text)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+
+    def get_id(self):
+        # Prefixed so the Flask-Login user_loader knows which table to query
+        # -- Staff and ClientUser are separate tables sharing one login form.
+        return f"staff:{self.id}"
 
 
 class Certification(db.Model):
@@ -74,18 +93,34 @@ class Client(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
     zones = db.relationship("Zone", backref="client", lazy=True)
-    client_users = db.relationship("ClientUser", backref="client", lazy=True)
+    # Legacy one-to-one link via client_users.client_id (column kept for
+    # backward compatibility but unused by new code -- see
+    # client_user_assignments for the real many-to-many access model).
+    legacy_client_users = db.relationship("ClientUser", backref="legacy_client", lazy=True)
 
 
-class ClientUser(db.Model):
+client_user_assignments = db.Table(
+    "client_user_assignments",
+    db.Column("client_user_id", UUID(as_uuid=True), db.ForeignKey("client_users.id"), primary_key=True),
+    db.Column("client_id", UUID(as_uuid=True), db.ForeignKey("clients.id"), primary_key=True),
+)
+
+
+class ClientUser(db.Model, UserMixin, PasswordMixin):
     __tablename__ = "client_users"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=gen_uuid)
-    client_id = db.Column(UUID(as_uuid=True), db.ForeignKey("clients.id"), nullable=False)
+    client_id = db.Column(UUID(as_uuid=True), db.ForeignKey("clients.id"))  # legacy, unused by new code
     name = db.Column(db.Text, nullable=False)
     email = db.Column(db.Text, nullable=False, unique=True)
     role = db.Column(db.Text, nullable=False, default="viewer")  # 'viewer' | 'admin'
+    password_hash = db.Column(db.Text)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+
+    clients = db.relationship("Client", secondary=client_user_assignments, backref="portal_users")
+
+    def get_id(self):
+        return f"client:{self.id}"
 
 
 class Zone(db.Model):

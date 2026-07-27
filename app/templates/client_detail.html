@@ -1,0 +1,55 @@
+{% extends "base_admin.html" %}
+{% block title %}{{ client.name }} — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Client</div>
+    <h1 class="page-title">{{ client.name }}</h1>
+    <p class="page-subtitle">
+      {{ client.address or "No address on file" }}
+      {% if client.contact_name %} &middot; {{ client.contact_name }}{% endif %}
+      {% if client.contact_email %} &middot; {{ client.contact_email }}{% endif %}
+    </p>
+  </div>
+  <a href="{{ url_for('portal.client_portal', client_id=client.id) }}" class="btn btn-outline-secondary">
+    <i class="bi bi-box-arrow-up-right"></i> View portal
+  </a>
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-header"><i class="bi bi-geo-alt me-1"></i> Zones</div>
+  {% if not zones %}
+    <div class="empty-state py-4">No zones yet. Add the first one below.</div>
+  {% else %}
+    {% for zone in zones %}
+      <div class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ zone.name }}</div>
+          {% if zone.description %}<div class="sp-row-meta">{{ zone.description }}</div>{% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-header"><i class="bi bi-plus-lg me-1"></i> Add a zone</div>
+  <div class="sp-card-body">
+    <form method="post" action="{{ url_for('clients.zone_new', company_id=company.id, client_id=client.id) }}">
+      <div class="row align-items-end">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Zone name</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Cold Storage" required>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Description <span class="text-muted fw-normal">(optional)</span></label>
+          <input type="text" name="description" class="form-control" placeholder="What's in this area?">
+        </div>
+        <div class="col-md-2 mb-3">
+          <button type="submit" class="btn btn-accent w-100">Add zone</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

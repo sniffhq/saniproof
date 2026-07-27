@@ -1,0 +1,50 @@
+{% extends "base_admin.html" %}
+{% block title %}New staff account — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Accounts</div>
+    <h1 class="page-title">New staff account</h1>
+    <p class="page-subtitle">Full access to {{ company.name }}'s internal dashboard.</p>
+  </div>
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-body">
+    <form method="post">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Name</label>
+          <input type="text" name="name" class="form-control" required autofocus>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Role</label>
+          <select name="role" class="form-select" required>
+            <option value="admin">Admin</option>
+            <option value="crew">Crew</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Phone <span class="text-muted fw-normal">(optional)</span></label>
+          <input type="text" name="phone" class="form-control">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" required minlength="6">
+      </div>
+
+      <button type="submit" class="btn btn-accent">
+        <i class="bi bi-check-lg"></i> Create account
+      </button>
+      <a href="{{ url_for('users_admin.user_list', company_id=company.id) }}" class="btn btn-light">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

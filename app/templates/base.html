@@ -11,17 +11,22 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <nav class="topbar">
+  <nav class="topbar d-flex align-items-center justify-content-between">
     <a href="{{ url_for('dashboard.index') }}" class="topbar-brand">
       <i class="bi bi-shield-check"></i> SaniProof
     </a>
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('auth.logout') }}" class="topbar-logout">
+        <i class="bi bi-box-arrow-right"></i> Log out
+      </a>
+    {% endif %}
   </nav>
   <div class="container simple-container">
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        {% for m in messages %}
-          <div class="alert alert-success d-flex align-items-center gap-2">
-            <i class="bi bi-check-circle"></i> {{ m }}
+        {% for category, m in messages %}
+          <div class="alert {{ 'alert-danger' if category == 'error' else 'alert-success' }} d-flex align-items-center gap-2">
+            <i class="bi {{ 'bi-exclamation-circle' if category == 'error' else 'bi-check-circle' }}"></i> {{ m }}
           </div>
         {% endfor %}
       {% endif %}

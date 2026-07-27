@@ -1,0 +1,68 @@
+{% extends "base_admin.html" %}
+{% block title %}Users — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Accounts</div>
+    <h1 class="page-title">Users</h1>
+    <p class="page-subtitle">Company staff logins and client portal logins.</p>
+  </div>
+</div>
+
+<div class="page-header">
+  <div class="eyebrow mb-0">Company staff</div>
+  <a href="{{ url_for('users_admin.staff_new', company_id=company.id) }}" class="btn btn-accent btn-sm">
+    <i class="bi bi-plus-lg"></i> New staff account
+  </a>
+</div>
+
+{% if not staff %}
+  <div class="sp-card">
+    <div class="empty-state py-3">No staff accounts yet.</div>
+  </div>
+{% else %}
+  <div class="sp-card">
+    {% for member in staff %}
+      <div class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ member.name }}</div>
+          <div class="sp-row-meta">{{ member.email }}{% if member.phone %} &middot; {{ member.phone }}{% endif %}</div>
+        </div>
+        <span class="pill pill-{{ 'completed' if member.role == 'admin' else 'pending' }} text-capitalize">{{ member.role }}</span>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="page-header mt-4">
+  <div class="eyebrow mb-0">Client portal accounts</div>
+  <a href="{{ url_for('users_admin.client_user_new', company_id=company.id) }}" class="btn btn-accent btn-sm">
+    <i class="bi bi-plus-lg"></i> New portal account
+  </a>
+</div>
+
+{% if not portal_users %}
+  <div class="sp-card">
+    <div class="empty-state py-3">No client portal accounts yet.</div>
+  </div>
+{% else %}
+  <div class="sp-card">
+    {% for user in portal_users %}
+      <div class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ user.name }}</div>
+          <div class="sp-row-meta">
+            {{ user.email }} &middot;
+            {% if user.clients %}
+              {{ user.clients | map(attribute='name') | join(', ') }}
+            {% else %}
+              <span class="text-danger">No clients assigned</span>
+            {% endif %}
+          </div>
+        </div>
+        <span class="pill pill-{{ 'completed' if user.role == 'admin' else 'pending' }} text-capitalize">{{ user.role }}</span>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

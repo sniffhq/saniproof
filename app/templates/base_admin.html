@@ -40,20 +40,27 @@
            class="nav-link {{ 'active' if active_nav == 'clients' else '' }}">
           <i class="bi bi-building"></i> Clients
         </a>
+        <a href="{{ url_for('users_admin.user_list', company_id=company.id) }}"
+           class="nav-link {{ 'active' if active_nav == 'users' else '' }}">
+          <i class="bi bi-people"></i> Users
+        </a>
       </nav>
 
-      <a href="{{ url_for('dashboard.index') }}" class="sidebar-switch">
-        <i class="bi bi-arrow-left-right"></i> Switch company
-      </a>
+      <div class="sidebar-user">
+        <div class="sidebar-user-name"><i class="bi bi-person-circle me-1"></i>{{ current_user.name }}</div>
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-switch">
+          <i class="bi bi-box-arrow-right"></i> Log out
+        </a>
+      </div>
     </aside>
 
     <main class="main-content">
       <div class="main-inner">
-        {% with messages = get_flashed_messages() %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
-            {% for m in messages %}
-              <div class="alert alert-success d-flex align-items-center gap-2">
-                <i class="bi bi-check-circle"></i> {{ m }}
+            {% for category, m in messages %}
+              <div class="alert {{ 'alert-danger' if category == 'error' else 'alert-success' }} d-flex align-items-center gap-2">
+                <i class="bi {{ 'bi-exclamation-circle' if category == 'error' else 'bi-check-circle' }}"></i> {{ m }}
               </div>
             {% endfor %}
           {% endif %}

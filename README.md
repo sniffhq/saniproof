@@ -4,26 +4,39 @@ Flask app for SaniProof, connected to Supabase Postgres (via the Supavisor sessi
 
 ## What's here
 
-- `app/models.py` — SQLAlchemy models matching the tables in Supabase (companies, staff, clients, zones, chemicals, mss_tasks, shifts, task_assignments, completions, issues, certifications, sop_documents).
-- `app/routes/dashboard.py` — company picker + internal dashboard: today's shifts and task status.
+- `app/models.py` — SQLAlchemy models matching the tables in Supabase (companies, staff, clients, zones, chemicals, mss_tasks, shifts, task_assignments, completions, issues, certifications, sop_documents, client_user_assignments).
+- `app/auth.py` — Flask-Login setup: two login-capable models (`Staff`, `ClientUser`) sharing one login form, plus `staff_required` / `client_user_required` decorators that enforce ownership (a staff account can only see its own company; a client user can only see clients it's been assigned).
+- `app/routes/auth.py` — login/logout.
+- `app/routes/dashboard.py` — internal dashboard: today's shifts and task status.
 - `app/routes/tasks_admin.py` — browse and create Master Sanitation Schedule tasks.
 - `app/routes/sops.py` — SOP document library: view and upload standard operating procedures, link them to tasks.
-- `app/routes/clients.py` — list of client food plants, with a link into each one's portal.
-- `app/routes/tasks.py` — crew view: open an assigned task, mark it complete with a photo/chemical/notes, or report an issue.
-- `app/routes/portal.py` — read-only client portal: a food plant's QA team can see zone-by-zone cleaning status.
+- `app/routes/clients.py` — list clients, create a new client, add zones to it.
+- `app/routes/users_admin.py` — create staff accounts and client-portal accounts, and assign a portal account to one or more clients.
+- `app/routes/tasks.py` — crew view: open an assigned task, mark it complete with a photo/chemical/notes, or report an issue. Requires a staff login.
+- `app/routes/portal.py` — read-only client portal: a food plant's QA team sees zone-by-zone cleaning status. Requires a client-portal login, scoped to assigned clients.
+
+## Accounts & access model
+
+Two separate account types, one login form (`/login`):
+
+- **Staff** (`staff` table) — belongs to one company, full access to that company's dashboard, tasks, SOPs, clients, and user management. Roles (`admin`/`crew`) exist in the schema but aren't enforced differently yet — both get the same access for now.
+- **Client portal users** (`client_users` table) — not tied to a company; instead assigned to one or more specific clients via `client_user_assignments`. Only see the portal(s) for clients they've been assigned. A user assigned to more than one facility gets a picker at `/portal/select`.
+
+New accounts are created from the **Users** page in the sidebar — there's no self-signup. To create the very first staff login for a new company, set a password directly in Supabase (see "Bootstrapping" below).
 
 ## UI structure
 
 Two layouts:
-- `base_admin.html` — sidebar nav (Dashboard, Tasks, SOPs, Clients), used for internal company-management pages.
-- `base.html` — minimal top bar, used for the company picker, the client-facing portal, and the crew task-execution page (kept lightweight since crews use it on a phone).
+- `base_admin.html` — sidebar nav (Dashboard, Tasks, SOPs, Clients, Users), used for internal company-management pages.
+- `base.html` — minimal top bar, used for login, the client-facing portal, and the crew task-execution page (kept lightweight since crews use it on a phone).
 
 ## What's NOT here yet (on purpose)
 
-- **No authentication.** Anyone with a URL can view any company/client's data right now. Add login (Flask-Login is the standard fit) before this touches real customer data.
-- **No Row Level Security in Supabase.** Intentionally held off until auth is in place — flagged as a TODO.
+- **No Row Level Security in Supabase.** App-level checks (`staff_required`, `client_user_required`) enforce access now, but RLS as a second layer in the database itself is still a TODO.
 - **Photo and SOP file uploads save to local disk** (`app/static/uploads`, `app/static/sops`), which is fine for local testing but is NOT persistent on Railway (files vanish on redeploy). Swap for Supabase Storage before this holds anything that matters.
-- No edit/delete UI for tasks, SOPs, or clients yet — create-only for now.
+- No edit/delete UI for tasks, SOPs, clients, or user accounts yet — create-only for now.
+- No password reset flow — an admin has to reset a forgotten password directly in Supabase for now.
+- Staff `admin` vs `crew` role doesn't yet restrict anything differently.
 
 ## Local setup
 
@@ -33,9 +46,19 @@ source venv/bin/activate       # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 cp .env.example .env           # then fill in DATABASE_URL with your real Supabase password
-python seed.py                 # creates one test company/client/zone/task so you have something to click
+python seed.py                 # creates a test company + admin login (admin@example.com / changeme123)
 python wsgi.py                 # runs at http://localhost:5000
 ```
+
+## Bootstrapping a first login on an existing company
+
+If a company already has staff rows without a password (e.g. seeded directly via SQL), generate a hash and set it:
+
+```bash
+python3 -c "from werkzeug.security import generate_password_hash; print(generate_password_hash('your-password'))"
+```
+
+Then `update staff set password_hash = '<hash>' where email = '...'` in Supabase's SQL editor. After that, use the Users page to create everyone else properly.
 
 ## Deploying to Railway
 
@@ -46,4 +69,4 @@ python wsgi.py                 # runs at http://localhost:5000
 
 ## Database
 
-Schema lives in Supabase project `lspvfrsjzeorggirtriu` (migrations: `saniproof_initial_schema`, `add_sop_documents`). This app does not create tables itself — it only reads/writes to what's already there. If you change `app/models.py`, you need a matching SQL migration in Supabase or they'll drift out of sync.
+Schema lives in Supabase project `lspvfrsjzeorggirtriu` (migrations: `saniproof_initial_schema`, `add_sop_documents`, `add_auth_and_client_assignments`). This app does not create tables itself — it only reads/writes to what's already there. If you change `app/models.py`, you need a matching SQL migration in Supabase or they'll drift out of sync.

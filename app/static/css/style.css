@@ -163,6 +163,34 @@ a { text-decoration: none; }
 
 .sidebar-switch:hover { color: #fff; }
 
+.sidebar-user {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 0.5rem;
+  padding-top: 0.6rem;
+}
+
+.sidebar-user-name {
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0 0.75rem;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-user .sidebar-switch { border-top: none; margin-top: 0; }
+
+.topbar-logout {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.topbar-logout:hover { color: #fff; }
+
 .main-content {
   flex-grow: 1;
   min-width: 0;

@@ -20,7 +20,8 @@ with app.app_context():
     db.session.add(company)
     db.session.flush()
 
-    staff = Staff(company_id=company.id, name="Test Crew Member", email="crew@example.com", role="crew")
+    staff = Staff(company_id=company.id, name="Test Admin", email="admin@example.com", role="admin")
+    staff.set_password("changeme123")
     db.session.add(staff)
 
     client = Client(company_id=company.id, name="Acme Food Processing Plant")
@@ -54,6 +55,7 @@ with app.app_context():
 
     db.session.commit()
 
+    print(f"Log in at /login with admin@example.com / changeme123")
     print(f"Company dashboard: /company/{company.id}")
     print(f"Task detail:       /task-assignment/{assignment.id}")
-    print(f"Client portal:     /portal/{client.id}")
+    print(f"Client portal:     /portal/{client.id} (no login yet -- create a portal account via Users)")
