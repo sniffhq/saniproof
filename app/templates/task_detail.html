@@ -27,6 +27,83 @@
   </div>
 {% endif %}
 
+{% if assignment.mss_task.checklist_items %}
+  <div class="sp-card">
+    <div class="sp-card-header">
+      <span><i class="bi bi-list-check me-1"></i> Checklist</span>
+      <span id="checklist-progress-label" class="sp-row-meta mb-0">{{ checked_count }} of {{ total_count }} complete</span>
+    </div>
+    <div class="checklist-progress-track">
+      <div id="checklist-progress-bar" class="checklist-progress-fill"
+           style="width: {{ (checked_count / total_count * 100) if total_count else 0 }}%;"></div>
+    </div>
+    <div class="sp-card-body">
+      {% for item in assignment.mss_task.checklist_items %}
+        {% set response = responses_by_item.get(item.id) %}
+        <div class="checklist-row" data-item-id="{{ item.id }}">
+          <label class="checklist-row-main">
+            <input type="checkbox" class="form-check-input checklist-checkbox"
+                   {{ 'checked' if response and response.checked else '' }}>
+            <span class="checklist-label">{{ item.label }}</span>
+          </label>
+          <input type="text" class="form-control form-control-sm checklist-notes"
+                 placeholder="Notes (optional)" value="{{ response.notes if response and response.notes else '' }}">
+          <span class="checklist-saved-indicator"><i class="bi bi-check2"></i></span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const assignmentId = "{{ assignment.id }}";
+      const rows = document.querySelectorAll(".checklist-row");
+      const progressLabel = document.getElementById("checklist-progress-label");
+      const progressBar = document.getElementById("checklist-progress-bar");
+
+      function save(itemId, payload, indicatorEl) {
+        const body = new URLSearchParams(payload);
+        fetch(`/task-assignment/${assignmentId}/checklist-item/${itemId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: body,
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (!data.ok) return;
+            progressLabel.textContent = `${data.checked_count} of ${data.total_count} complete`;
+            const pct = data.total_count ? (data.checked_count / data.total_count) * 100 : 0;
+            progressBar.style.width = pct + "%";
+            if (indicatorEl) {
+              indicatorEl.classList.add("show");
+              setTimeout(() => indicatorEl.classList.remove("show"), 1200);
+            }
+          })
+          .catch(() => {});
+      }
+
+      rows.forEach((row) => {
+        const itemId = row.dataset.itemId;
+        const checkbox = row.querySelector(".checklist-checkbox");
+        const notes = row.querySelector(".checklist-notes");
+        const indicator = row.querySelector(".checklist-saved-indicator");
+
+        checkbox.addEventListener("change", () => {
+          save(itemId, { checked: checkbox.checked ? "true" : "false" }, indicator);
+        });
+
+        let notesTimer;
+        notes.addEventListener("input", () => {
+          clearTimeout(notesTimer);
+          notesTimer = setTimeout(() => {
+            save(itemId, { notes: notes.value }, indicator);
+          }, 600);
+        });
+      });
+    })();
+  </script>
+{% endif %}
+
 <div class="row">
   <div class="col-md-6">
     <div class="sp-card">

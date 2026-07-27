@@ -22,17 +22,18 @@
 {% else %}
   <div class="sp-card">
     {% for task in tasks %}
-      <div class="sp-row">
+      <a href="{{ url_for('tasks_admin.task_detail', company_id=company.id, task_id=task.id) }}" class="sp-row">
         <div>
           <div class="sp-row-title">{{ task.name }}</div>
           <div class="sp-row-meta">
             {{ task.zone.client.name }} &middot; {{ task.zone.name }}
             {% if task.default_chemical %} &middot; {{ task.default_chemical.name }}{% endif %}
             {% if task.sop_document %} &middot; <i class="bi bi-file-earmark-text"></i> {{ task.sop_document.title }}{% endif %}
+            &middot; {{ task.checklist_items|length }} checklist step{{ 's' if task.checklist_items|length != 1 else '' }}
           </div>
         </div>
         <span class="pill pill-pending text-capitalize">{{ task.frequency }}</span>
-      </div>
+      </a>
     {% endfor %}
   </div>
 {% endif %}

@@ -8,11 +8,11 @@ Flask app for SaniProof, connected to Supabase Postgres (via the Supavisor sessi
 - `app/auth.py` — Flask-Login setup: two login-capable models (`Staff`, `ClientUser`) sharing one login form, plus `staff_required` / `client_user_required` decorators that enforce ownership (a staff account can only see its own company; a client user can only see clients it's been assigned).
 - `app/routes/auth.py` — login/logout.
 - `app/routes/dashboard.py` — internal dashboard: today's shifts and task status.
-- `app/routes/tasks_admin.py` — browse and create Master Sanitation Schedule tasks.
+- `app/routes/tasks_admin.py` — browse and create Master Sanitation Schedule tasks, and build each task's checklist template (the steps a crew checks off).
 - `app/routes/sops.py` — SOP document library: view and upload standard operating procedures, link them to tasks.
 - `app/routes/clients.py` — list clients, create a new client, add zones to it.
 - `app/routes/users_admin.py` — create staff accounts and client-portal accounts, and assign a portal account to one or more clients.
-- `app/routes/tasks.py` — crew view: open an assigned task, mark it complete with a photo/chemical/notes, or report an issue. Requires a staff login.
+- `app/routes/tasks.py` — crew view: open an assigned task, check off checklist steps in real time (with per-step notes), mark it complete with a photo/chemical/notes, or report an issue. Requires a staff login.
 - `app/routes/portal.py` — read-only client portal: a food plant's QA team sees zone-by-zone cleaning status. Requires a client-portal login, scoped to assigned clients.
 
 ## Accounts & access model
@@ -30,11 +30,15 @@ Two layouts:
 - `base_admin.html` — sidebar nav (Dashboard, Tasks, SOPs, Clients, Users), used for internal company-management pages.
 - `base.html` — minimal top bar, used for login, the client-facing portal, and the crew task-execution page (kept lightweight since crews use it on a phone).
 
+## Checklists
+
+Each task (`mss_tasks`) can have a checklist template (`checklist_items`) defined once by an admin from the task's detail page (Tasks -> click a task). During execution, a crew member checks items off and can leave a note per step on the task's mobile page (`checklist_responses`); each check/uncheck and note saves immediately via a small AJAX call, no page reload, with a live progress bar. Checking any item bumps a `pending` assignment to `in_progress` automatically. Finishing the checklist does **not** auto-complete the task -- "mark complete" (photo + chemical + notes) is still a separate, explicit step, since that's the actual proof-of-clean record. A task with no checklist items defined just skips straight to the mark-complete form, same as before.
+
 ## What's NOT here yet (on purpose)
 
 - **No Row Level Security in Supabase.** App-level checks (`staff_required`, `client_user_required`) enforce access now, but RLS as a second layer in the database itself is still a TODO.
 - **Photo and SOP file uploads save to local disk** (`app/static/uploads`, `app/static/sops`), which is fine for local testing but is NOT persistent on Railway (files vanish on redeploy). Swap for Supabase Storage before this holds anything that matters.
-- No edit/delete UI for tasks, SOPs, clients, or user accounts yet — create-only for now.
+- No edit/delete/reorder UI for tasks, checklist items, SOPs, clients, or user accounts yet — create-only for now.
 - No password reset flow — an admin has to reset a forgotten password directly in Supabase for now.
 - Staff `admin` vs `crew` role doesn't yet restrict anything differently.
 
@@ -69,4 +73,4 @@ Then `update staff set password_hash = '<hash>' where email = '...'` in Supabase
 
 ## Database
 
-Schema lives in Supabase project `lspvfrsjzeorggirtriu` (migrations: `saniproof_initial_schema`, `add_sop_documents`, `add_auth_and_client_assignments`). This app does not create tables itself — it only reads/writes to what's already there. If you change `app/models.py`, you need a matching SQL migration in Supabase or they'll drift out of sync.
+Schema lives in Supabase project `lspvfrsjzeorggirtriu` (migrations: `saniproof_initial_schema`, `add_sop_documents`, `add_auth_and_client_assignments`, `add_checklists`). This app does not create tables itself — it only reads/writes to what's already there. If you change `app/models.py`, you need a matching SQL migration in Supabase or they'll drift out of sync.

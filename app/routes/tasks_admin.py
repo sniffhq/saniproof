@@ -10,9 +10,20 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 
 from app.auth import staff_required
 from app.extensions import db
-from app.models import Company, Client, Zone, Chemical, MssTask, SopDocument
+from app.models import Company, Client, Zone, Chemical, MssTask, SopDocument, ChecklistItem
 
 tasks_admin_bp = Blueprint("tasks_admin", __name__)
+
+
+def _get_company_task_or_404(company_id, task_id):
+    """Fetch a task, confirming it belongs (via zone -> client) to this
+    company -- prevents a staff member from managing another company's
+    task by guessing a task_id."""
+    return (
+        MssTask.query.join(Zone).join(Client)
+        .filter(MssTask.id == task_id, Client.company_id == company_id)
+        .first_or_404()
+    )
 
 
 @tasks_admin_bp.route("/company/<uuid:company_id>/tasks")
@@ -55,8 +66,8 @@ def task_new(company_id):
         )
         db.session.add(task)
         db.session.commit()
-        flash(f'Task "{task.name}" created.')
-        return redirect(url_for("tasks_admin.task_list", company_id=company_id))
+        flash(f'Task "{task.name}" created. Now build its checklist below.')
+        return redirect(url_for("tasks_admin.task_detail", company_id=company_id, task_id=task.id))
 
     return render_template(
         "task_form.html",
@@ -67,3 +78,35 @@ def task_new(company_id):
         show_sidebar=True,
         active_nav="tasks",
     )
+
+
+@tasks_admin_bp.route("/company/<uuid:company_id>/tasks/<uuid:task_id>")
+@staff_required
+def task_detail(company_id, task_id):
+    company = Company.query.get_or_404(company_id)
+    task = _get_company_task_or_404(company_id, task_id)
+
+    return render_template(
+        "task_admin_detail.html",
+        company=company,
+        task=task,
+        show_sidebar=True,
+        active_nav="tasks",
+    )
+
+
+@tasks_admin_bp.route("/company/<uuid:company_id>/tasks/<uuid:task_id>/checklist-items/new", methods=["POST"])
+@staff_required
+def checklist_item_new(company_id, task_id):
+    task = _get_company_task_or_404(company_id, task_id)
+
+    next_order = len(task.checklist_items)
+    item = ChecklistItem(
+        mss_task_id=task.id,
+        label=request.form["label"],
+        sort_order=next_order,
+    )
+    db.session.add(item)
+    db.session.commit()
+    flash(f'Checklist step "{item.label}" added.')
+    return redirect(url_for("tasks_admin.task_detail", company_id=company_id, task_id=task_id))

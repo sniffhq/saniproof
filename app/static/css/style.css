@@ -335,6 +335,59 @@ a.sp-row:hover { background: #f8fafc; }
 }
 .empty-state i { font-size: 1.8rem; color: var(--sp-line); margin-bottom: 0.5rem; display: block; }
 
+/* ---------- Checklist ---------- */
+
+.checklist-progress-track {
+  height: 6px;
+  background: var(--sp-line);
+}
+
+.checklist-progress-fill {
+  height: 100%;
+  background: var(--sp-accent);
+  transition: width 0.25s ease;
+}
+
+.checklist-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--sp-line);
+  flex-wrap: wrap;
+}
+.checklist-row:last-child { border-bottom: none; }
+
+.checklist-row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1 1 220px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.checklist-checkbox {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+}
+
+.checklist-label { font-size: 0.92rem; font-weight: 500; }
+
+.checklist-notes {
+  flex: 1 1 200px;
+  max-width: 280px;
+}
+
+.checklist-saved-indicator {
+  color: var(--sp-accent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  width: 1rem;
+}
+.checklist-saved-indicator.show { opacity: 1; }
+
 /* ---------- Landing (company picker) ---------- */
 
 .landing-hero {

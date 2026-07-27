@@ -1,0 +1,51 @@
+{% extends "base_admin.html" %}
+{% block title %}{{ task.name }} — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">{{ task.zone.client.name }} &middot; {{ task.zone.name }}</div>
+    <h1 class="page-title">{{ task.name }}</h1>
+    <p class="page-subtitle">
+      <span class="text-capitalize">{{ task.frequency }}</span>
+      {% if task.default_chemical %} &middot; {{ task.default_chemical.name }}{% endif %}
+      {% if task.sop_document %} &middot; <i class="bi bi-file-earmark-text"></i> {{ task.sop_document.title }}{% endif %}
+    </p>
+  </div>
+</div>
+
+{% if task.description %}
+  <p class="page-subtitle mb-3">{{ task.description }}</p>
+{% endif %}
+
+<div class="sp-card">
+  <div class="sp-card-header"><i class="bi bi-list-check me-1"></i> Checklist</div>
+  {% if not task.checklist_items %}
+    <div class="empty-state py-4">
+      No checklist steps yet. Add the steps a crew member should check off while completing this task.
+    </div>
+  {% else %}
+    {% for item in task.checklist_items %}
+      <div class="sp-row">
+        <div class="sp-row-title">{{ loop.index }}. {{ item.label }}</div>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-header"><i class="bi bi-plus-lg me-1"></i> Add a step</div>
+  <div class="sp-card-body">
+    <form method="post" action="{{ url_for('tasks_admin.checklist_item_new', company_id=company.id, task_id=task.id) }}">
+      <div class="row align-items-end">
+        <div class="col-md-9 mb-3">
+          <label class="form-label">Step description</label>
+          <input type="text" name="label" class="form-control" placeholder="e.g. Pre-rinse with water" required>
+        </div>
+        <div class="col-md-3 mb-3">
+          <button type="submit" class="btn btn-accent w-100">Add step</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

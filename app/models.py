@@ -175,6 +175,24 @@ class MssTask(db.Model):
     default_chemical = db.relationship("Chemical")
     sop_document = db.relationship("SopDocument")
     assignments = db.relationship("TaskAssignment", backref="mss_task", lazy=True)
+    checklist_items = db.relationship(
+        "ChecklistItem", backref="mss_task", lazy=True, order_by="ChecklistItem.sort_order"
+    )
+
+
+class ChecklistItem(db.Model):
+    """One step in a task's checklist template (e.g. 'Pre-rinse with water').
+    Defined once per MssTask by an admin; reused every time that task is
+    executed. Actual check/uncheck state per execution lives in
+    ChecklistResponse, not here."""
+
+    __tablename__ = "checklist_items"
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=gen_uuid)
+    mss_task_id = db.Column(UUID(as_uuid=True), db.ForeignKey("mss_tasks.id"), nullable=False)
+    label = db.Column(db.Text, nullable=False)
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 
 class Shift(db.Model):
@@ -205,6 +223,21 @@ class TaskAssignment(db.Model):
     assigned_staff = db.relationship("Staff")
     completions = db.relationship("Completion", backref="task_assignment", lazy=True)
     issues = db.relationship("Issue", backref="task_assignment", lazy=True)
+    checklist_responses = db.relationship(
+        "ChecklistResponse", backref="task_assignment", lazy=True
+    )
+
+    def checklist_progress(self):
+        """(checked_count, total_count) across this task's checklist items,
+        joining in any items that don't have a response row yet."""
+        items = self.mss_task.checklist_items
+        if not items:
+            return (0, 0)
+        responses_by_item = {r.checklist_item_id: r for r in self.checklist_responses}
+        checked = sum(
+            1 for item in items if responses_by_item.get(item.id) and responses_by_item[item.id].checked
+        )
+        return (checked, len(items))
 
 
 class Completion(db.Model):
@@ -222,6 +255,25 @@ class Completion(db.Model):
 
     completed_by_staff = db.relationship("Staff")
     chemical = db.relationship("Chemical")
+
+
+class ChecklistResponse(db.Model):
+    """Actual checked/unchecked + notes state for one checklist item during
+    one specific task execution. Upserted as the crew works through the
+    list -- not tied to the final Completion record, so progress persists
+    even before 'mark complete' is submitted."""
+
+    __tablename__ = "checklist_responses"
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=gen_uuid)
+    task_assignment_id = db.Column(UUID(as_uuid=True), db.ForeignKey("task_assignments.id"), nullable=False)
+    checklist_item_id = db.Column(UUID(as_uuid=True), db.ForeignKey("checklist_items.id"), nullable=False)
+    checked = db.Column(db.Boolean, nullable=False, default=False)
+    notes = db.Column(db.Text)
+    checked_by = db.Column(UUID(as_uuid=True), db.ForeignKey("staff.id"))
+    updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+
+    checklist_item = db.relationship("ChecklistItem")
 
 
 class Issue(db.Model):

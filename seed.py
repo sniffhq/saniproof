@@ -11,7 +11,7 @@ from datetime import date
 
 from app import create_app
 from app.extensions import db
-from app.models import Company, Staff, Client, Zone, Chemical, MssTask, Shift, TaskAssignment
+from app.models import Company, Staff, Client, Zone, Chemical, MssTask, Shift, TaskAssignment, ChecklistItem
 
 app = create_app()
 
@@ -45,6 +45,17 @@ with app.app_context():
     )
     db.session.add(task)
     db.session.flush()
+
+    for i, label in enumerate([
+        "Remove all product debris",
+        "Disassemble belt guards",
+        "Pre-rinse with water",
+        "Apply Quat Sanitizer per SOP-014",
+        "Scrub high-touch areas",
+        "Post-rinse",
+        "Visual inspection -- no residue",
+    ]):
+        db.session.add(ChecklistItem(mss_task_id=task.id, label=label, sort_order=i))
 
     shift = Shift(company_id=company.id, client_id=client.id, shift_date=date.today())
     db.session.add(shift)
