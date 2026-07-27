@@ -21,11 +21,16 @@ login_manager.login_message_category = "error"
 @login_manager.user_loader
 def load_user(user_id):
     kind, _, raw_id = user_id.partition(":")
+    user = None
     if kind == "staff":
-        return Staff.query.get(raw_id)
-    if kind == "client":
-        return ClientUser.query.get(raw_id)
-    return None
+        user = Staff.query.get(raw_id)
+    elif kind == "client":
+        user = ClientUser.query.get(raw_id)
+    # A deactivated account's existing session stops working immediately --
+    # returning None here forces Flask-Login to treat them as logged out.
+    if user and not user.active:
+        return None
+    return user
 
 
 def staff_required(view):

@@ -1,0 +1,44 @@
+{% extends "base_admin.html" %}
+{% block title %}Issues — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Corrective actions</div>
+    <h1 class="page-title">Issues</h1>
+    <p class="page-subtitle">Problems flagged by crews during task execution.</p>
+  </div>
+  <div class="btn-group">
+    <a href="{{ url_for('issues.issue_list', company_id=company.id, status='open') }}"
+       class="btn btn-sm {{ 'btn-accent' if status_filter == 'open' else 'btn-outline-secondary' }}">Open</a>
+    <a href="{{ url_for('issues.issue_list', company_id=company.id, status='resolved') }}"
+       class="btn btn-sm {{ 'btn-accent' if status_filter == 'resolved' else 'btn-outline-secondary' }}">Resolved</a>
+    <a href="{{ url_for('issues.issue_list', company_id=company.id, status='all') }}"
+       class="btn btn-sm {{ 'btn-accent' if status_filter == 'all' else 'btn-outline-secondary' }}">All</a>
+  </div>
+</div>
+
+{% if not issues %}
+  <div class="sp-card">
+    <div class="empty-state">
+      <i class="bi bi-check2-circle"></i>
+      Nothing here.
+    </div>
+  </div>
+{% else %}
+  <div class="sp-card">
+    {% for issue in issues %}
+      <a href="{{ url_for('issues.issue_detail', company_id=company.id, issue_id=issue.id) }}" class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ issue.description[:80] }}{{ '...' if issue.description|length > 80 else '' }}</div>
+          <div class="sp-row-meta">
+            {{ issue.task_assignment.mss_task.name }} &middot;
+            {{ issue.task_assignment.shift.client.name }} &middot;
+            {{ issue.created_at.strftime('%b %d, %Y') if issue.created_at else '' }}
+          </div>
+        </div>
+        <span class="pill pill-{{ issue.severity }} text-capitalize">{{ issue.severity }}</span>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

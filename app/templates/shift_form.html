@@ -1,0 +1,46 @@
+{% extends "base_admin.html" %}
+{% block title %}New shift — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Scheduling</div>
+    <h1 class="page-title">New shift</h1>
+    <p class="page-subtitle">Pick a client and date. You'll add tasks on the next screen.</p>
+  </div>
+</div>
+
+{% if not clients %}
+  <div class="sp-card">
+    <div class="empty-state">
+      <i class="bi bi-exclamation-triangle"></i>
+      No clients yet. <a href="{{ url_for('clients.client_new', company_id=company.id) }}">Add a client first</a>.
+    </div>
+  </div>
+{% else %}
+  <div class="sp-card">
+    <div class="sp-card-body">
+      <form method="post">
+        <div class="row">
+          <div class="col-md-7 mb-3">
+            <label class="form-label">Client</label>
+            <select name="client_id" class="form-select" required>
+              <option value="" disabled selected>Select a client</option>
+              {% for client in clients %}
+                <option value="{{ client.id }}">{{ client.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-5 mb-3">
+            <label class="form-label">Date</label>
+            <input type="date" name="shift_date" class="form-control" value="{{ today }}" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-accent">
+          <i class="bi bi-check-lg"></i> Create shift
+        </button>
+        <a href="{{ url_for('schedule.schedule_list', company_id=company.id) }}" class="btn btn-light">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

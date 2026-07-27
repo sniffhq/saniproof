@@ -1,0 +1,72 @@
+{% extends "base_admin.html" %}
+{% block title %}Reports — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Audit</div>
+    <h1 class="page-title">Reports</h1>
+    <p class="page-subtitle">Export proof-of-clean records and issue logs for a client or auditor.</p>
+  </div>
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-header"><i class="bi bi-check2-square me-1"></i> Completions export</div>
+  <div class="sp-card-body">
+    <form method="get" action="{{ url_for('reports.completions_csv', company_id=company.id) }}" class="row align-items-end">
+      <div class="col-md-3 mb-3">
+        <label class="form-label">From</label>
+        <input type="date" name="start" class="form-control" value="{{ start.isoformat() }}">
+      </div>
+      <div class="col-md-3 mb-3">
+        <label class="form-label">To</label>
+        <input type="date" name="end" class="form-control" value="{{ end.isoformat() }}">
+      </div>
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Client <span class="text-muted fw-normal">(optional)</span></label>
+        <select name="client_id" class="form-select">
+          <option value="">All clients</option>
+          {% for client in clients %}
+            <option value="{{ client.id }}">{{ client.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 mb-3">
+        <button type="submit" class="btn btn-accent w-100">
+          <i class="bi bi-download"></i> Export CSV
+        </button>
+      </div>
+    </form>
+    <div class="form-text">Includes task, zone, client, chemical, dilution, notes, and checklist progress for each completion.</div>
+  </div>
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-header"><i class="bi bi-exclamation-triangle me-1"></i> Issues export</div>
+  <div class="sp-card-body">
+    <form method="get" action="{{ url_for('reports.issues_csv', company_id=company.id) }}" class="row align-items-end">
+      <div class="col-md-3 mb-3">
+        <label class="form-label">From</label>
+        <input type="date" name="start" class="form-control" value="{{ start.isoformat() }}">
+      </div>
+      <div class="col-md-3 mb-3">
+        <label class="form-label">To</label>
+        <input type="date" name="end" class="form-control" value="{{ end.isoformat() }}">
+      </div>
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Status <span class="text-muted fw-normal">(optional)</span></label>
+        <select name="status" class="form-select">
+          <option value="">All statuses</option>
+          <option value="open">Open</option>
+          <option value="resolved">Resolved</option>
+        </select>
+      </div>
+      <div class="col-md-2 mb-3">
+        <button type="submit" class="btn btn-accent w-100">
+          <i class="bi bi-download"></i> Export CSV
+        </button>
+      </div>
+    </form>
+    <div class="form-text">Includes severity, description, corrective action, and who reported/resolved each issue.</div>
+  </div>
+</div>
+{% endblock %}

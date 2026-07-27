@@ -15,6 +15,7 @@ def create_app():
 
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     os.makedirs(app.config["SOP_UPLOAD_FOLDER"], exist_ok=True)
+    os.makedirs(app.config["SDS_UPLOAD_FOLDER"], exist_ok=True)
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -27,6 +28,11 @@ def create_app():
     from app.routes.portal import portal_bp
     from app.routes.clients import clients_bp
     from app.routes.users_admin import users_admin_bp
+    from app.routes.schedule import schedule_bp
+    from app.routes.issues import issues_bp
+    from app.routes.certifications import certifications_bp
+    from app.routes.chemicals import chemicals_bp
+    from app.routes.reports import reports_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -36,5 +42,10 @@ def create_app():
     app.register_blueprint(portal_bp)
     app.register_blueprint(clients_bp)
     app.register_blueprint(users_admin_bp)
+    app.register_blueprint(schedule_bp)
+    app.register_blueprint(issues_bp)
+    app.register_blueprint(certifications_bp)
+    app.register_blueprint(chemicals_bp)
+    app.register_blueprint(reports_bp)
 
     return app

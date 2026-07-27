@@ -1,0 +1,73 @@
+{% extends "base_admin.html" %}
+{% block title %}{{ shift.client.name }} — {{ shift.shift_date }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Scheduling</div>
+    <h1 class="page-title">{{ shift.client.name }}</h1>
+    <p class="page-subtitle">{{ shift.shift_date }}</p>
+  </div>
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-header"><i class="bi bi-list-check me-1"></i> Assigned tasks</div>
+  {% if not shift.assignments %}
+    <div class="empty-state py-4">No tasks assigned to this shift yet. Add some below.</div>
+  {% else %}
+    {% for a in shift.assignments %}
+      <a href="{{ url_for('tasks.task_detail', assignment_id=a.id) }}" class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ a.mss_task.name }}</div>
+          <div class="sp-row-meta">
+            {{ a.mss_task.zone.name }}
+            {% if a.assigned_staff %} &middot; {{ a.assigned_staff.name }}{% else %} &middot; Unassigned{% endif %}
+          </div>
+        </div>
+        <span class="pill pill-{{ a.status }}">{{ a.status.replace('_', ' ') }}</span>
+      </a>
+    {% endfor %}
+  {% endif %}
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-header"><i class="bi bi-plus-lg me-1"></i> Add tasks to this shift</div>
+  <div class="sp-card-body">
+    {% if not available_tasks %}
+      <div class="text-muted">Every active task for this client is already on this shift.</div>
+    {% else %}
+      <form method="post" action="{{ url_for('schedule.shift_assign', company_id=company.id, shift_id=shift.id) }}">
+        <table class="table align-middle mb-3">
+          <thead>
+            <tr>
+              <th style="width: 40px;"></th>
+              <th>Task</th>
+              <th>Zone</th>
+              <th style="width: 220px;">Assign to</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for task in available_tasks %}
+              <tr>
+                <td><input type="checkbox" name="task_ids" value="{{ task.id }}" class="form-check-input"></td>
+                <td>{{ task.name }}</td>
+                <td class="text-muted">{{ task.zone.name }}</td>
+                <td>
+                  <select name="staff_{{ task.id }}" class="form-select form-select-sm">
+                    <option value="">-- unassigned --</option>
+                    {% for member in staff %}
+                      <option value="{{ member.id }}">{{ member.name }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <button type="submit" class="btn btn-accent">
+          <i class="bi bi-check-lg"></i> Add selected tasks
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

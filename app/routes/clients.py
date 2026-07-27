@@ -52,7 +52,28 @@ def client_new(company_id):
         return redirect(url_for("clients.client_detail", company_id=company_id, client_id=client.id))
 
     return render_template(
-        "client_form.html", company=company, show_sidebar=True, active_nav="clients"
+        "client_form.html", company=company, client=None, show_sidebar=True, active_nav="clients"
+    )
+
+
+@clients_bp.route("/company/<uuid:company_id>/clients/<uuid:client_id>/edit", methods=["GET", "POST"])
+@staff_required
+def client_edit(company_id, client_id):
+    company = Company.query.get_or_404(company_id)
+    client = Client.query.filter_by(id=client_id, company_id=company_id).first_or_404()
+
+    if request.method == "POST":
+        client.name = request.form["name"]
+        client.address = request.form.get("address")
+        client.contact_name = request.form.get("contact_name")
+        client.contact_email = request.form.get("contact_email")
+        client.contact_phone = request.form.get("contact_phone")
+        db.session.commit()
+        flash(f'"{client.name}" updated.')
+        return redirect(url_for("clients.client_detail", company_id=company_id, client_id=client_id))
+
+    return render_template(
+        "client_form.html", company=company, client=client, show_sidebar=True, active_nav="clients"
     )
 
 

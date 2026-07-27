@@ -21,10 +21,12 @@ def login():
             user = ClientUser.query.filter(func.lower(ClientUser.email) == email).first()
 
         if user and user.check_password(password):
-            login_user(user)
-            return _redirect_after_login(user)
-
-        flash("Invalid email or password.", "error")
+            if not user.active:
+                flash("This account has been deactivated. Contact your admin.", "error")
+            elif login_user(user):
+                return _redirect_after_login(user)
+        else:
+            flash("Invalid email or password.", "error")
 
     return render_template("login.html")
 

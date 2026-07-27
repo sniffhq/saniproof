@@ -28,9 +28,21 @@
            class="nav-link {{ 'active' if active_nav == 'dashboard' else '' }}">
           <i class="bi bi-grid-1x2"></i> Dashboard
         </a>
+        <a href="{{ url_for('schedule.schedule_list', company_id=company.id) }}"
+           class="nav-link {{ 'active' if active_nav == 'schedule' else '' }}">
+          <i class="bi bi-calendar-week"></i> Schedule
+        </a>
         <a href="{{ url_for('tasks_admin.task_list', company_id=company.id) }}"
            class="nav-link {{ 'active' if active_nav == 'tasks' else '' }}">
           <i class="bi bi-list-check"></i> Tasks
+        </a>
+        <a href="{{ url_for('issues.issue_list', company_id=company.id) }}"
+           class="nav-link {{ 'active' if active_nav == 'issues' else '' }}">
+          <i class="bi bi-exclamation-triangle"></i> Issues
+        </a>
+        <a href="{{ url_for('chemicals.chemical_list', company_id=company.id) }}"
+           class="nav-link {{ 'active' if active_nav == 'chemicals' else '' }}">
+          <i class="bi bi-flask"></i> Chemicals
         </a>
         <a href="{{ url_for('sops.sop_list', company_id=company.id) }}"
            class="nav-link {{ 'active' if active_nav == 'sops' else '' }}">
@@ -43,6 +55,14 @@
         <a href="{{ url_for('users_admin.user_list', company_id=company.id) }}"
            class="nav-link {{ 'active' if active_nav == 'users' else '' }}">
           <i class="bi bi-people"></i> Users
+        </a>
+        <a href="{{ url_for('certifications.cert_list', company_id=company.id) }}"
+           class="nav-link {{ 'active' if active_nav == 'certifications' else '' }}">
+          <i class="bi bi-patch-check"></i> Certifications
+        </a>
+        <a href="{{ url_for('reports.report_list', company_id=company.id) }}"
+           class="nav-link {{ 'active' if active_nav == 'reports' else '' }}">
+          <i class="bi bi-file-earmark-bar-graph"></i> Reports
         </a>
       </nav>
 

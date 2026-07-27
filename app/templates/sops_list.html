@@ -31,13 +31,18 @@
             {{ sop.description or "No description" }}
           </div>
         </div>
-        {% if sop.file_url %}
-          <a href="{{ sop.file_url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-download"></i> View file
+        <div class="d-flex gap-2 align-items-center">
+          {% if sop.file_url %}
+            <a href="{{ sop.file_url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-download"></i> View file
+            </a>
+          {% else %}
+            <span class="pill pill-pending">No file attached</span>
+          {% endif %}
+          <a href="{{ url_for('sops.sop_edit', company_id=company.id, sop_id=sop.id) }}" class="btn btn-sm btn-light">
+            <i class="bi bi-pencil"></i> Edit
           </a>
-        {% else %}
-          <span class="pill pill-pending">No file attached</span>
-        {% endif %}
+        </div>
       </div>
     {% endfor %}
   </div>

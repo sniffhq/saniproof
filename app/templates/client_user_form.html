@@ -1,11 +1,11 @@
 {% extends "base_admin.html" %}
-{% block title %}New portal account — {{ company.name }}{% endblock %}
+{% block title %}{{ 'Edit portal account' if member else 'New portal account' }} — {{ company.name }}{% endblock %}
 {% block content %}
 <div class="page-header">
   <div>
     <div class="eyebrow">Accounts</div>
-    <h1 class="page-title">New client portal account</h1>
-    <p class="page-subtitle">Scoped to whichever clients you assign below.</p>
+    <h1 class="page-title">{{ 'Edit portal account' if member else 'New client portal account' }}</h1>
+    {% if not member %}<p class="page-subtitle">Scoped to whichever clients you assign below.</p>{% endif %}
   </div>
 </div>
 
@@ -23,23 +23,29 @@
         <div class="row">
           <div class="col-md-6 mb-3">
             <label class="form-label">Name</label>
-            <input type="text" name="name" class="form-control" required autofocus>
+            <input type="text" name="name" class="form-control" value="{{ member.name if member else '' }}" required autofocus>
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label">Role</label>
             <select name="role" class="form-select" required>
-              <option value="viewer">Viewer</option>
-              <option value="admin">Admin</option>
+              <option value="viewer" {{ 'selected' if member and member.role == 'viewer' else '' }}>Viewer</option>
+              <option value="admin" {{ 'selected' if member and member.role == 'admin' else '' }}>Admin</option>
             </select>
           </div>
         </div>
         <div class="mb-3">
           <label class="form-label">Email</label>
-          <input type="email" name="email" class="form-control" required>
+          {% if member %}
+            <input type="email" class="form-control" value="{{ member.email }}" disabled>
+            <div class="form-text">Email can't be changed here.</div>
+          {% else %}
+            <input type="email" name="email" class="form-control" required>
+          {% endif %}
         </div>
         <div class="mb-3">
-          <label class="form-label">Password</label>
-          <input type="password" name="password" class="form-control" required minlength="6">
+          <label class="form-label">{{ 'New password' if member else 'Password' }}</label>
+          <input type="password" name="password" class="form-control" {{ '' if member else 'required' }} minlength="6">
+          {% if member %}<div class="form-text">Leave blank to keep the current password.</div>{% endif %}
         </div>
 
         <div class="mb-4">
@@ -48,7 +54,8 @@
             {% for client in clients %}
               <label class="sp-row" style="cursor:pointer;">
                 <span class="sp-row-title" style="font-weight:500;">{{ client.name }}</span>
-                <input type="checkbox" name="client_ids" value="{{ client.id }}" class="form-check-input">
+                <input type="checkbox" name="client_ids" value="{{ client.id }}" class="form-check-input"
+                  {{ 'checked' if member and client in member.clients else '' }}>
               </label>
             {% endfor %}
           </div>
@@ -56,7 +63,7 @@
         </div>
 
         <button type="submit" class="btn btn-accent">
-          <i class="bi bi-check-lg"></i> Create account
+          <i class="bi bi-check-lg"></i> {{ 'Save changes' if member else 'Create account' }}
         </button>
         <a href="{{ url_for('users_admin.user_list', company_id=company.id) }}" class="btn btn-light">Cancel</a>
       </form>

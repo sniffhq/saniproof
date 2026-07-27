@@ -5,4 +5,6 @@ app/static/uploads/*
 !app/static/uploads/.gitkeep
 app/static/sops/*
 !app/static/sops/.gitkeep
+app/static/sds/*
+!app/static/sds/.gitkeep
 .DS_Store

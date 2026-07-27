@@ -10,16 +10,21 @@ Flask app for SaniProof, connected to Supabase Postgres (via the Supavisor sessi
 - `app/routes/dashboard.py` — internal dashboard: today's shifts and task status.
 - `app/routes/tasks_admin.py` — browse and create Master Sanitation Schedule tasks, and build each task's checklist template (the steps a crew checks off).
 - `app/routes/sops.py` — SOP document library: view and upload standard operating procedures, link them to tasks.
-- `app/routes/clients.py` — list clients, create a new client, add zones to it.
-- `app/routes/users_admin.py` — create staff accounts and client-portal accounts, and assign a portal account to one or more clients.
+- `app/routes/clients.py` — list, create, and edit clients, add zones to them.
+- `app/routes/users_admin.py` — create/edit staff accounts and client-portal accounts, assign a portal account to one or more clients, and deactivate either type.
 - `app/routes/tasks.py` — crew view: open an assigned task, check off checklist steps in real time (with per-step notes), mark it complete with a photo/chemical/notes, or report an issue. Requires a staff login.
 - `app/routes/portal.py` — read-only client portal: a food plant's QA team sees zone-by-zone cleaning status. Requires a client-portal login, scoped to assigned clients.
+- `app/routes/schedule.py` — create shifts for a client on a given date, and assign that client's active tasks (optionally to a specific crew member) to the shift.
+- `app/routes/issues.py` — issue resolution workflow: view open/resolved issues reported during task execution, record a corrective action, and mark resolved.
+- `app/routes/chemicals.py` — chemical library: create/edit chemicals with an optional SDS file upload.
+- `app/routes/certifications.py` — define certification types, assign them to staff with issued/expiry dates, and flag expired or soon-to-expire certifications.
+- `app/routes/reports.py` — CSV export of completions and issues, filterable by date range, client, and status.
 
 ## Accounts & access model
 
 Two separate account types, one login form (`/login`):
 
-- **Staff** (`staff` table) — belongs to one company, full access to that company's dashboard, tasks, SOPs, clients, and user management. Roles (`admin`/`crew`) exist in the schema but aren't enforced differently yet — both get the same access for now.
+- **Staff** (`staff` table) — belongs to one company, full access to that company's dashboard, tasks, SOPs, clients, and user management. Roles (`admin`/`crew`) exist in the schema but aren't enforced differently yet — both get the same access for now. Deactivating a staff account (via the Users page) logs it out and blocks future logins without deleting its history.
 - **Client portal users** (`client_users` table) — not tied to a company; instead assigned to one or more specific clients via `client_user_assignments`. Only see the portal(s) for clients they've been assigned. A user assigned to more than one facility gets a picker at `/portal/select`.
 
 New accounts are created from the **Users** page in the sidebar — there's no self-signup. To create the very first staff login for a new company, set a password directly in Supabase (see "Bootstrapping" below).
@@ -27,7 +32,7 @@ New accounts are created from the **Users** page in the sidebar — there's no s
 ## UI structure
 
 Two layouts:
-- `base_admin.html` — sidebar nav (Dashboard, Tasks, SOPs, Clients, Users), used for internal company-management pages.
+- `base_admin.html` — sidebar nav (Dashboard, Schedule, Tasks, Issues, Chemicals, SOPs, Clients, Users, Certifications, Reports), used for internal company-management pages.
 - `base.html` — minimal top bar, used for login, the client-facing portal, and the crew task-execution page (kept lightweight since crews use it on a phone).
 
 ## Checklists
@@ -37,10 +42,10 @@ Each task (`mss_tasks`) can have a checklist template (`checklist_items`) define
 ## What's NOT here yet (on purpose)
 
 - **No Row Level Security in Supabase.** App-level checks (`staff_required`, `client_user_required`) enforce access now, but RLS as a second layer in the database itself is still a TODO.
-- **Photo and SOP file uploads save to local disk** (`app/static/uploads`, `app/static/sops`), which is fine for local testing but is NOT persistent on Railway (files vanish on redeploy). Swap for Supabase Storage before this holds anything that matters.
-- No edit/delete/reorder UI for tasks, checklist items, SOPs, clients, or user accounts yet — create-only for now.
+- **Photo, SOP, and SDS file uploads save to local disk** (`app/static/uploads`, `app/static/sops`, `app/static/sds`), which is fine for local testing but is NOT persistent on Railway (files vanish on redeploy). Swap for Supabase Storage before this holds anything that matters.
 - No password reset flow — an admin has to reset a forgotten password directly in Supabase for now.
 - Staff `admin` vs `crew` role doesn't yet restrict anything differently.
+- No reorder UI for checklist steps yet (they're ordered by creation order).
 
 ## Local setup
 
@@ -73,4 +78,4 @@ Then `update staff set password_hash = '<hash>' where email = '...'` in Supabase
 
 ## Database
 
-Schema lives in Supabase project `lspvfrsjzeorggirtriu` (migrations: `saniproof_initial_schema`, `add_sop_documents`, `add_auth_and_client_assignments`, `add_checklists`). This app does not create tables itself — it only reads/writes to what's already there. If you change `app/models.py`, you need a matching SQL migration in Supabase or they'll drift out of sync.
+Schema lives in Supabase project `lspvfrsjzeorggirtriu` (migrations: `saniproof_initial_schema`, `add_sop_documents`, `add_auth_and_client_assignments`, `add_checklists`, `add_active_flags`). This app does not create tables itself — it only reads/writes to what's already there. If you change `app/models.py`, you need a matching SQL migration in Supabase or they'll drift out of sync.

@@ -65,8 +65,40 @@ def staff_new(company_id):
         return redirect(url_for("users_admin.user_list", company_id=company_id))
 
     return render_template(
-        "staff_user_form.html", company=company, show_sidebar=True, active_nav="users"
+        "staff_user_form.html", company=company, member=None, show_sidebar=True, active_nav="users"
     )
+
+
+@users_admin_bp.route("/company/<uuid:company_id>/users/staff/<uuid:staff_id>/edit", methods=["GET", "POST"])
+@staff_required
+def staff_edit(company_id, staff_id):
+    company = Company.query.get_or_404(company_id)
+    member = Staff.query.filter_by(id=staff_id, company_id=company_id).first_or_404()
+
+    if request.method == "POST":
+        member.name = request.form["name"]
+        member.role = request.form["role"]
+        member.phone = request.form.get("phone") or None
+        new_password = request.form.get("password")
+        if new_password:
+            member.set_password(new_password)
+        db.session.commit()
+        flash(f'"{member.name}" updated.')
+        return redirect(url_for("users_admin.user_list", company_id=company_id))
+
+    return render_template(
+        "staff_user_form.html", company=company, member=member, show_sidebar=True, active_nav="users"
+    )
+
+
+@users_admin_bp.route("/company/<uuid:company_id>/users/staff/<uuid:staff_id>/toggle-active", methods=["POST"])
+@staff_required
+def staff_toggle_active(company_id, staff_id):
+    member = Staff.query.filter_by(id=staff_id, company_id=company_id).first_or_404()
+    member.active = not member.active
+    db.session.commit()
+    flash(f'{member.name} is now {"active" if member.active else "deactivated"}.')
+    return redirect(url_for("users_admin.user_list", company_id=company_id))
 
 
 @users_admin_bp.route("/company/<uuid:company_id>/users/clients/new", methods=["GET", "POST"])
@@ -106,6 +138,52 @@ def client_user_new(company_id):
         "client_user_form.html",
         company=company,
         clients=clients,
+        member=None,
         show_sidebar=True,
         active_nav="users",
     )
+
+
+@users_admin_bp.route("/company/<uuid:company_id>/users/clients/<uuid:user_id>/edit", methods=["GET", "POST"])
+@staff_required
+def client_user_edit(company_id, user_id):
+    company = Company.query.get_or_404(company_id)
+    clients = Client.query.filter_by(company_id=company_id).order_by(Client.name).all()
+    member = ClientUser.query.filter(
+        ClientUser.id == user_id, ClientUser.clients.any(Client.company_id == company_id)
+    ).first()
+    if not member:
+        # Also allow editing a portal user who currently has zero clients
+        # assigned (e.g. all were removed) but was created for this company.
+        member = ClientUser.query.get_or_404(user_id)
+
+    if request.method == "POST":
+        member.name = request.form["name"]
+        member.role = request.form.get("role", "viewer")
+        selected_ids = request.form.getlist("client_ids")
+        member.clients = [c for c in clients if str(c.id) in selected_ids]
+        new_password = request.form.get("password")
+        if new_password:
+            member.set_password(new_password)
+        db.session.commit()
+        flash(f'"{member.name}" updated.')
+        return redirect(url_for("users_admin.user_list", company_id=company_id))
+
+    return render_template(
+        "client_user_form.html",
+        company=company,
+        clients=clients,
+        member=member,
+        show_sidebar=True,
+        active_nav="users",
+    )
+
+
+@users_admin_bp.route("/company/<uuid:company_id>/users/clients/<uuid:user_id>/toggle-active", methods=["POST"])
+@staff_required
+def client_user_toggle_active(company_id, user_id):
+    member = ClientUser.query.get_or_404(user_id)
+    member.active = not member.active
+    db.session.commit()
+    flash(f'{member.name} is now {"active" if member.active else "deactivated"}.')
+    return redirect(url_for("users_admin.user_list", company_id=company_id))

@@ -1,0 +1,35 @@
+{% extends "base_admin.html" %}
+{% block title %}Schedule — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Scheduling</div>
+    <h1 class="page-title">Shifts</h1>
+    <p class="page-subtitle">Most recent 50 shifts, newest first.</p>
+  </div>
+  <a href="{{ url_for('schedule.shift_new', company_id=company.id) }}" class="btn btn-accent">
+    <i class="bi bi-plus-lg"></i> New shift
+  </a>
+</div>
+
+{% if not shifts %}
+  <div class="sp-card">
+    <div class="empty-state">
+      <i class="bi bi-calendar-plus"></i>
+      No shifts yet. Create one to start assigning tasks.
+    </div>
+  </div>
+{% else %}
+  <div class="sp-card">
+    {% for shift in shifts %}
+      <a href="{{ url_for('schedule.shift_detail', company_id=company.id, shift_id=shift.id) }}" class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ shift.client.name }}</div>
+          <div class="sp-row-meta">{{ shift.shift_date }} &middot; {{ shift.assignments|length }} task{{ 's' if shift.assignments|length != 1 else '' }}</div>
+        </div>
+        <i class="bi bi-chevron-right text-muted"></i>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

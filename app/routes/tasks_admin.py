@@ -95,6 +95,53 @@ def task_detail(company_id, task_id):
     )
 
 
+@tasks_admin_bp.route("/company/<uuid:company_id>/tasks/<uuid:task_id>/edit", methods=["GET", "POST"])
+@staff_required
+def task_edit(company_id, task_id):
+    company = Company.query.get_or_404(company_id)
+    task = _get_company_task_or_404(company_id, task_id)
+
+    zones = (
+        Zone.query.join(Client).filter(Client.company_id == company_id)
+        .order_by(Client.name, Zone.name)
+        .all()
+    )
+    chemicals = Chemical.query.filter_by(company_id=company_id).order_by(Chemical.name).all()
+    sops = SopDocument.query.filter_by(company_id=company_id).order_by(SopDocument.title).all()
+
+    if request.method == "POST":
+        task.zone_id = request.form["zone_id"]
+        task.name = request.form["name"]
+        task.description = request.form.get("description")
+        task.frequency = request.form["frequency"]
+        task.default_chemical_id = request.form.get("default_chemical_id") or None
+        task.sop_document_id = request.form.get("sop_document_id") or None
+        db.session.commit()
+        flash(f'"{task.name}" updated.')
+        return redirect(url_for("tasks_admin.task_detail", company_id=company_id, task_id=task_id))
+
+    return render_template(
+        "task_form.html",
+        company=company,
+        task=task,
+        zones=zones,
+        chemicals=chemicals,
+        sops=sops,
+        show_sidebar=True,
+        active_nav="tasks",
+    )
+
+
+@tasks_admin_bp.route("/company/<uuid:company_id>/tasks/<uuid:task_id>/toggle-active", methods=["POST"])
+@staff_required
+def task_toggle_active(company_id, task_id):
+    task = _get_company_task_or_404(company_id, task_id)
+    task.active = not task.active
+    db.session.commit()
+    flash(f'"{task.name}" is now {"active" if task.active else "inactive"}.')
+    return redirect(url_for("tasks_admin.task_detail", company_id=company_id, task_id=task_id))
+
+
 @tasks_admin_bp.route("/company/<uuid:company_id>/tasks/<uuid:task_id>/checklist-items/new", methods=["POST"])
 @staff_required
 def checklist_item_new(company_id, task_id):

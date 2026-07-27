@@ -1,0 +1,52 @@
+{% extends "base_admin.html" %}
+{% block title %}Issue — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">{{ issue.task_assignment.shift.client.name }} &middot; {{ issue.task_assignment.mss_task.name }}</div>
+    <h1 class="page-title">Issue</h1>
+    <p class="page-subtitle">
+      Reported {{ issue.created_at.strftime('%b %d, %Y %I:%M %p') if issue.created_at else '' }}
+      {% if issue.reported_by %} by {{ issue.reported_by_staff.name if issue.reported_by_staff else 'a crew member' }}{% endif %}
+    </p>
+  </div>
+  <span class="pill pill-{{ issue.severity }} text-capitalize">{{ issue.severity }}</span>
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-body">
+    <p class="mb-0">{{ issue.description }}</p>
+  </div>
+</div>
+
+{% if issue.status == 'resolved' %}
+  <div class="sp-card">
+    <div class="sp-card-header"><i class="bi bi-check2-circle me-1"></i> Resolved</div>
+    <div class="sp-card-body">
+      <p class="mb-1">{{ issue.corrective_action or "No corrective action noted." }}</p>
+      <p class="sp-row-meta mb-0">
+        {{ issue.resolved_at.strftime('%b %d, %Y %I:%M %p') if issue.resolved_at else '' }}
+      </p>
+    </div>
+  </div>
+{% else %}
+  <div class="sp-card">
+    <div class="sp-card-header"><i class="bi bi-check-lg me-1"></i> Resolve this issue</div>
+    <div class="sp-card-body">
+      <form method="post" action="{{ url_for('issues.issue_resolve', company_id=company.id, issue_id=issue.id) }}">
+        <div class="mb-3">
+          <label class="form-label">Corrective action</label>
+          <textarea name="corrective_action" class="form-control" rows="3" placeholder="What was done to fix this?" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-accent">
+          <i class="bi bi-check-lg"></i> Mark resolved
+        </button>
+      </form>
+    </div>
+  </div>
+{% endif %}
+
+<a href="{{ url_for('tasks.task_detail', assignment_id=issue.task_assignment_id) }}" class="btn btn-outline-secondary btn-sm">
+  <i class="bi bi-arrow-left"></i> Back to task
+</a>
+{% endblock %}

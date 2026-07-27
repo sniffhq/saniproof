@@ -1,0 +1,120 @@
+{% extends "base_admin.html" %}
+{% block title %}Certifications — {{ company.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="eyebrow">Compliance</div>
+    <h1 class="page-title">Certifications</h1>
+    <p class="page-subtitle">Track staff certifications and catch expirations before an audit does.</p>
+  </div>
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-header"><i class="bi bi-people me-1"></i> Staff certifications</div>
+  {% if not records %}
+    <div class="empty-state py-4">No certifications on file yet. Assign one below.</div>
+  {% else %}
+    {% for record in records %}
+      <div class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ record.staff.name }} &middot; {{ record.certification.name }}</div>
+          <div class="sp-row-meta">
+            {% if record.issued_date %}Issued {{ record.issued_date.strftime('%b %d, %Y') }}{% endif %}
+            {% if record.expires_date %} &middot; Expires {{ record.expires_date.strftime('%b %d, %Y') }}{% endif %}
+            {% if not record.issued_date and not record.expires_date %}No dates on file{% endif %}
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          {% if record.status == 'expired' %}
+            <span class="pill pill-skipped">Expired</span>
+          {% elif record.status == 'expiring' %}
+            <span class="pill pill-in_progress">Expiring soon</span>
+          {% elif record.status == 'valid' %}
+            <span class="pill pill-completed">Valid</span>
+          {% else %}
+            <span class="pill pill-pending">No expiry set</span>
+          {% endif %}
+          <form method="post" action="{{ url_for('certifications.staff_cert_delete', company_id=company.id, record_id=record.id) }}"
+                onsubmit="return confirm('Remove this certification record?');">
+            <button type="submit" class="btn btn-sm btn-light"><i class="bi bi-trash"></i></button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-header"><i class="bi bi-plus-lg me-1"></i> Assign a certification</div>
+  <div class="sp-card-body">
+    {% if not cert_types or not staff %}
+      <div class="empty-state py-3">
+        {% if not staff %}Add staff accounts first.{% else %}Add a certification type below first.{% endif %}
+      </div>
+    {% else %}
+      <form method="post" action="{{ url_for('certifications.staff_cert_new', company_id=company.id) }}">
+        <div class="row align-items-end">
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Staff member</label>
+            <select name="staff_id" class="form-select" required>
+              {% for member in staff %}
+                <option value="{{ member.id }}">{{ member.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Certification</label>
+            <select name="certification_id" class="form-select" required>
+              {% for cert in cert_types %}
+                <option value="{{ cert.id }}">{{ cert.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Issued date</label>
+            <input type="date" name="issued_date" class="form-control">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Expires date</label>
+            <input type="date" name="expires_date" class="form-control">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-accent">Assign certification</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="sp-card">
+  <div class="sp-card-header"><i class="bi bi-tags me-1"></i> Certification types</div>
+  {% if not cert_types %}
+    <div class="empty-state py-3">No certification types defined yet.</div>
+  {% else %}
+    {% for cert in cert_types %}
+      <div class="sp-row">
+        <div>
+          <div class="sp-row-title">{{ cert.name }}</div>
+          {% if cert.description %}<div class="sp-row-meta">{{ cert.description }}</div>{% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+  <div class="sp-card-body">
+    <form method="post" action="{{ url_for('certifications.cert_type_new', company_id=company.id) }}">
+      <div class="row align-items-end">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Name</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. HACCP" required>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Description <span class="text-muted fw-normal">(optional)</span></label>
+          <input type="text" name="description" class="form-control">
+        </div>
+        <div class="col-md-2 mb-3">
+          <button type="submit" class="btn btn-accent w-100">Add type</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -28,7 +28,18 @@
           <div class="sp-row-title">{{ member.name }}</div>
           <div class="sp-row-meta">{{ member.email }}{% if member.phone %} &middot; {{ member.phone }}{% endif %}</div>
         </div>
-        <span class="pill pill-{{ 'completed' if member.role == 'admin' else 'pending' }} text-capitalize">{{ member.role }}</span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="pill pill-{{ 'completed' if member.role == 'admin' else 'pending' }} text-capitalize">{{ member.role }}</span>
+          <span class="pill pill-{{ 'completed' if member.active else 'skipped' }}">{{ 'active' if member.active else 'inactive' }}</span>
+          <a href="{{ url_for('users_admin.staff_edit', company_id=company.id, staff_id=member.id) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil"></i>
+          </a>
+          <form method="post" action="{{ url_for('users_admin.staff_toggle_active', company_id=company.id, staff_id=member.id) }}">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">
+              {% if member.active %}<i class="bi bi-pause-circle"></i>{% else %}<i class="bi bi-play-circle"></i>{% endif %}
+            </button>
+          </form>
+        </div>
       </div>
     {% endfor %}
   </div>
@@ -60,7 +71,18 @@
             {% endif %}
           </div>
         </div>
-        <span class="pill pill-{{ 'completed' if user.role == 'admin' else 'pending' }} text-capitalize">{{ user.role }}</span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="pill pill-{{ 'completed' if user.role == 'admin' else 'pending' }} text-capitalize">{{ user.role }}</span>
+          <span class="pill pill-{{ 'completed' if user.active else 'skipped' }}">{{ 'active' if user.active else 'inactive' }}</span>
+          <a href="{{ url_for('users_admin.client_user_edit', company_id=company.id, user_id=user.id) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil"></i>
+          </a>
+          <form method="post" action="{{ url_for('users_admin.client_user_toggle_active', company_id=company.id, user_id=user.id) }}">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">
+              {% if user.active %}<i class="bi bi-pause-circle"></i>{% else %}<i class="bi bi-play-circle"></i>{% endif %}
+            </button>
+          </form>
+        </div>
       </div>
     {% endfor %}
   </div>

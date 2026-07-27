@@ -51,12 +51,20 @@ class Staff(db.Model, UserMixin, PasswordMixin):
     role = db.Column(db.Text, nullable=False)  # 'admin' | 'crew'
     phone = db.Column(db.Text)
     password_hash = db.Column(db.Text)
+    active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+
+    certifications = db.relationship("StaffCertification", backref="staff", lazy=True)
 
     def get_id(self):
         # Prefixed so the Flask-Login user_loader knows which table to query
         # -- Staff and ClientUser are separate tables sharing one login form.
         return f"staff:{self.id}"
+
+    def is_active(self):
+        # Overrides Flask-Login's UserMixin default (always True) so a
+        # deactivated account gets logged out / can't log in.
+        return self.active
 
 
 class Certification(db.Model):
@@ -78,6 +86,8 @@ class StaffCertification(db.Model):
     issued_date = db.Column(db.Date)
     expires_date = db.Column(db.Date)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+
+    certification = db.relationship("Certification")
 
 
 class Client(db.Model):
@@ -115,12 +125,16 @@ class ClientUser(db.Model, UserMixin, PasswordMixin):
     email = db.Column(db.Text, nullable=False, unique=True)
     role = db.Column(db.Text, nullable=False, default="viewer")  # 'viewer' | 'admin'
     password_hash = db.Column(db.Text)
+    active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
     clients = db.relationship("Client", secondary=client_user_assignments, backref="portal_users")
 
     def get_id(self):
         return f"client:{self.id}"
+
+    def is_active(self):
+        return self.active
 
 
 class Zone(db.Model):
@@ -290,3 +304,6 @@ class Issue(db.Model):
     resolved_by = db.Column(UUID(as_uuid=True), db.ForeignKey("staff.id"))
     resolved_at = db.Column(db.DateTime(timezone=True))
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+
+    reported_by_staff = db.relationship("Staff", foreign_keys=[reported_by])
+    resolved_by_staff = db.relationship("Staff", foreign_keys=[resolved_by])

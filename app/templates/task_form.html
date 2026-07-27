@@ -1,11 +1,11 @@
 {% extends "base_admin.html" %}
-{% block title %}New task — {{ company.name }}{% endblock %}
+{% block title %}{{ 'Edit task' if task else 'New task' }} — {{ company.name }}{% endblock %}
 {% block content %}
 <div class="page-header">
   <div>
     <div class="eyebrow">Master Sanitation Schedule</div>
-    <h1 class="page-title">New task</h1>
-    <p class="page-subtitle">Add a recurring sanitation task to a zone.</p>
+    <h1 class="page-title">{{ 'Edit task' if task else 'New task' }}</h1>
+    {% if not task %}<p class="page-subtitle">Add a recurring sanitation task to a zone.</p>{% endif %}
   </div>
 </div>
 
@@ -13,7 +13,7 @@
   <div class="sp-card">
     <div class="empty-state">
       <i class="bi bi-exclamation-triangle"></i>
-      No zones exist yet for this company's clients. Add a client and zone in Supabase first.
+      No zones exist yet for this company's clients. <a href="{{ url_for('clients.client_list', company_id=company.id) }}">Add a client and zone first</a>.
     </div>
   </div>
 {% else %}
@@ -22,15 +22,18 @@
       <form method="post">
         <div class="mb-3">
           <label class="form-label">Task name</label>
-          <input type="text" name="name" class="form-control" placeholder="e.g. Sanitize conveyor belt" required>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Sanitize conveyor belt"
+                 value="{{ task.name if task else '' }}" required>
         </div>
 
         <div class="mb-3">
           <label class="form-label">Zone</label>
           <select name="zone_id" class="form-select" required>
-            <option value="" disabled selected>Select a zone</option>
+            <option value="" {{ 'selected' if not task else '' }} disabled>Select a zone</option>
             {% for zone in zones %}
-              <option value="{{ zone.id }}">{{ zone.client.name }} — {{ zone.name }}</option>
+              <option value="{{ zone.id }}" {{ 'selected' if task and task.zone_id == zone.id else '' }}>
+                {{ zone.client.name }} — {{ zone.name }}
+              </option>
             {% endfor %}
           </select>
         </div>
@@ -39,11 +42,9 @@
           <div class="col-md-6 mb-3">
             <label class="form-label">Frequency</label>
             <select name="frequency" class="form-select" required>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="custom">Custom</option>
+              {% for freq in ['daily', 'weekly', 'monthly', 'quarterly', 'custom'] %}
+                <option value="{{ freq }}" {{ 'selected' if task and task.frequency == freq else '' }}>{{ freq|capitalize }}</option>
+              {% endfor %}
             </select>
           </div>
           <div class="col-md-6 mb-3">
@@ -51,7 +52,7 @@
             <select name="default_chemical_id" class="form-select">
               <option value="">-- none --</option>
               {% for c in chemicals %}
-                <option value="{{ c.id }}">{{ c.name }}</option>
+                <option value="{{ c.id }}" {{ 'selected' if task and task.default_chemical_id == c.id else '' }}>{{ c.name }}</option>
               {% endfor %}
             </select>
           </div>
@@ -62,7 +63,7 @@
           <select name="sop_document_id" class="form-select">
             <option value="">-- none --</option>
             {% for s in sops %}
-              <option value="{{ s.id }}">{{ s.title }}</option>
+              <option value="{{ s.id }}" {{ 'selected' if task and task.sop_document_id == s.id else '' }}>{{ s.title }}</option>
             {% endfor %}
           </select>
           <div class="form-text">
@@ -72,11 +73,11 @@
 
         <div class="mb-4">
           <label class="form-label">Description</label>
-          <textarea name="description" class="form-control" rows="3" placeholder="What does this task actually involve?"></textarea>
+          <textarea name="description" class="form-control" rows="3" placeholder="What does this task actually involve?">{{ task.description if task and task.description else '' }}</textarea>
         </div>
 
         <button type="submit" class="btn btn-accent">
-          <i class="bi bi-check-lg"></i> Create task
+          <i class="bi bi-check-lg"></i> {{ 'Save changes' if task else 'Create task' }}
         </button>
         <a href="{{ url_for('tasks_admin.task_list', company_id=company.id) }}" class="btn btn-light">Cancel</a>
       </form>

@@ -1,11 +1,11 @@
 {% extends "base_admin.html" %}
-{% block title %}Add SOP — {{ company.name }}{% endblock %}
+{% block title %}{{ 'Edit SOP' if sop else 'Add SOP' }} — {{ company.name }}{% endblock %}
 {% block content %}
 <div class="page-header">
   <div>
     <div class="eyebrow">Document library</div>
-    <h1 class="page-title">Add SOP</h1>
-    <p class="page-subtitle">Upload a standard operating procedure document.</p>
+    <h1 class="page-title">{{ 'Edit SOP' if sop else 'Add SOP' }}</h1>
+    {% if not sop %}<p class="page-subtitle">Upload a standard operating procedure document.</p>{% endif %}
   </div>
 </div>
 
@@ -14,36 +14,52 @@
     <form method="post" enctype="multipart/form-data">
       <div class="mb-3">
         <label class="form-label">Title</label>
-        <input type="text" name="title" class="form-control" placeholder="e.g. Conveyor Belt Teardown &amp; Sanitize" required>
+        <input type="text" name="title" class="form-control" placeholder="e.g. Conveyor Belt Teardown &amp; Sanitize"
+               value="{{ sop.title if sop else '' }}" required>
       </div>
 
       <div class="row">
         <div class="col-md-6 mb-3">
           <label class="form-label">Category <span class="text-muted fw-normal">(optional)</span></label>
-          <input type="text" name="category" class="form-control" placeholder="e.g. Equipment, Allergen, Chemical">
+          <input type="text" name="category" class="form-control" placeholder="e.g. Equipment, Allergen, Chemical"
+                 value="{{ sop.category if sop and sop.category else '' }}">
         </div>
         <div class="col-md-6 mb-3">
           <label class="form-label">Version <span class="text-muted fw-normal">(optional)</span></label>
-          <input type="text" name="version" class="form-control" placeholder="e.g. 2.1">
+          <input type="text" name="version" class="form-control" placeholder="e.g. 2.1"
+                 value="{{ sop.version if sop and sop.version else '' }}">
         </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label">Description</label>
-        <textarea name="description" class="form-control" rows="3" placeholder="What's this procedure for?"></textarea>
+        <textarea name="description" class="form-control" rows="3" placeholder="What's this procedure for?">{{ sop.description if sop and sop.description else '' }}</textarea>
       </div>
 
       <div class="mb-4">
         <label class="form-label">Document file <span class="text-muted fw-normal">(optional)</span></label>
         <input type="file" name="file" class="form-control">
-        <div class="form-text">PDF, Word doc, or image of the procedure.</div>
+        {% if sop and sop.file_url %}
+          <div class="form-text">Current file: <a href="{{ sop.file_url }}" target="_blank">view</a> (uploading a new one replaces it)</div>
+        {% else %}
+          <div class="form-text">PDF, Word doc, or image of the procedure.</div>
+        {% endif %}
       </div>
 
       <button type="submit" class="btn btn-accent">
-        <i class="bi bi-check-lg"></i> Save SOP
+        <i class="bi bi-check-lg"></i> {{ 'Save changes' if sop else 'Save SOP' }}
       </button>
       <a href="{{ url_for('sops.sop_list', company_id=company.id) }}" class="btn btn-light">Cancel</a>
     </form>
   </div>
 </div>
+
+{% if sop %}
+  <form method="post" action="{{ url_for('sops.sop_delete', company_id=company.id, sop_id=sop.id) }}"
+        onsubmit="return confirm('Delete this SOP? Any tasks linking to it will be unlinked.');">
+    <button type="submit" class="btn btn-outline-danger btn-sm">
+      <i class="bi bi-trash"></i> Delete SOP
+    </button>
+  </form>
+{% endif %}
 {% endblock %}
